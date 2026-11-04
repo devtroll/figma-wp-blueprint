@@ -1,6 +1,6 @@
 ---
 name: acf
-description: Create or change ACF Pro field groups as local JSON in the theme's acf-json folder - section clone groups, the Flexible Content page builder, options page fields, and CPT fields - with deterministic keys and matching template reads. Use for /acf, adding fields, editing a field group, or when a build step needs ACF fields.
+description: Create or change ACF Pro field groups as local JSON in the theme's acf-json folder - ACF block field groups (content and layout fields), options page fields, and CPT fields - with deterministic keys and matching template reads. Use for /acf, adding fields, editing a field group, or when a build step needs ACF fields.
 ---
 
 # acf - field groups as local JSON
@@ -15,7 +15,7 @@ direct work and says that no spec is logging it.
 
 What to create or change, for example:
 
-- `/acf section hero` - the clone group for a section
+- `/acf block hero` - the field groups of an ACF block (content group and admin-only layout group)
 - `/acf add "subtitle" text to hero`
 - `/acf options footer socials` - fields on the Theme Settings options page
 - `/acf cpt project` - the field group for a CPT
@@ -27,10 +27,11 @@ What to create or change, for example:
 2. Read the existing JSON in `acf-json/` for the groups you will touch, and
    search the theme for every `get_field`/`get_sub_field` that reads them.
 3. Pick the group by purpose:
-   - section content -> `group_section_<layout>.json` (inactive, cloned into the
-     page builder)
-   - new section on the page builder -> also add a layout to
-     `group_page_builder.json`
+   - block content (images, texts, lists, `hide_block`) ->
+     `group_block_<block>.json`, location rule `block == acf/<block>`
+   - block layout settings (`type`, background, text alignment, image side) ->
+     `group_block_<block>_layout.json`, same block location rule plus
+     `current_user_role == administrator`, so the client never sees them
    - header, footer, global data -> `group_theme_settings.json` (options page)
    - CPT data -> `group_<cpt>_fields.json`
 4. Derive fields from the Figma node (`figma.mjs node <url>`, text and image

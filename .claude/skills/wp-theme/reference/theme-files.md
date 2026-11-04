@@ -23,7 +23,7 @@ Text Domain: {text-domain}
 <?php
 defined( 'ABSPATH' ) || exit;
 
-foreach ( array( 'setup', 'helpers', 'enqueue', 'acf' ) as $file ) {
+foreach ( array( 'setup', 'helpers', 'enqueue', 'acf', 'blocks' ) as $file ) {
 	require_once get_theme_file_path( "inc/{$file}.php" );
 }
 
@@ -53,11 +53,7 @@ function {prefix}_setup() {
 }
 add_action( 'after_setup_theme', '{prefix}_setup' );
 
-// Pages are edited through the ACF page builder only.
-function {prefix}_disable_block_editor_for_pages( $use_block_editor, $post_type ) {
-	return 'page' === $post_type ? false : $use_block_editor;
-}
-add_filter( 'use_block_editor_for_post_type', '{prefix}_disable_block_editor_for_pages', 10, 2 );
+// The block editor (Gutenberg) is the standard editor; pages are built from the theme's ACF blocks (inc/blocks.php).
 ```
 
 ## inc/enqueue.php
@@ -174,6 +170,65 @@ function {prefix}_icon( $name, $class = '' ) {
 }
 ```
 
+## inc/blocks.php
+
+Starting point. Verify the filters against the installed WordPress and ACF Pro versions.
+
+```php
+<?php
+defined( 'ABSPATH' ) || exit;
+
+/** Register every ACF block from blocks/<block>/block.json. */
+function {prefix}_register_blocks() {
+	foreach ( glob( get_theme_file_path( 'blocks/*/block.json' ) ) ?: array() as $file ) {
+		register_block_type( dirname( $file ) );
+	}
+}
+add_action( 'init', '{prefix}_register_blocks' );
+
+function {prefix}_block_category( $categories ) {
+	array_unshift( $categories, array( 'slug' => '{prefix}-sections', 'title' => __( 'Sections', '{text-domain}' ) ) );
+	return $categories;
+}
+add_filter( 'block_categories_all', '{prefix}_block_category' );
+
+/** Only the theme's own blocks plus the core blocks the plan names. */
+function {prefix}_allowed_blocks( $allowed, $context ) {
+	$theme = array_map(
+		static function ( $file ) {
+			return 'acf/' . basename( dirname( $file ) );
+		},
+		glob( get_theme_file_path( 'blocks/*/block.json' ) ) ?: array()
+	);
+	$core  = array( 'core/paragraph', 'core/heading', 'core/list', 'core/list-item', 'core/image' );
+	return array_merge( $theme, $core );
+}
+add_filter( 'allowed_block_types_all', '{prefix}_allowed_blocks', 10, 2 );
+
+/**
+ * Page block templates: the structure per page template, locked against adding and
+ * deleting for editors (moving and hiding stay possible), unlocked for administrators.
+ * Map page template slugs to block lists in inc/block-templates.php.
+ */
+function {prefix}_page_block_template() {
+	$screen = get_current_screen();
+	if ( ! $screen || 'page' !== $screen->post_type ) {
+		return;
+	}
+	$post_id = isset( $_GET['post'] ) ? absint( $_GET['post'] ) : 0; // phpcs:ignore WordPress.Security.NonceVerification
+	$slug    = $post_id ? get_page_template_slug( $post_id ) : '';
+	$map     = require get_theme_file_path( 'inc/block-templates.php' ); // slug => array( array( 'acf/hero', array() ), ... )
+	$object  = get_post_type_object( 'page' );
+
+	if ( 'free-page.php' === $slug || empty( $map[ $slug ] ) ) {
+		return; // free page template (administrators only): no fixed structure.
+	}
+	$object->template      = $map[ $slug ];
+	$object->template_lock = current_user_can( 'manage_options' ) ? false : 'insert';
+}
+add_action( 'current_screen', '{prefix}_page_block_template' );
+```
+
 ## page.php
 
 ```php
@@ -186,7 +241,7 @@ get_header();
 	<?php
 	while ( have_posts() ) {
 		the_post();
-		get_template_part( 'template-parts/flexible-content' );
+		the_content();
 	}
 	?>
 </main>
@@ -194,25 +249,8 @@ get_header();
 get_footer();
 ```
 
-## template-parts/flexible-content.php
-
-```php
-<?php
-defined( 'ABSPATH' ) || exit;
-
-if ( ! function_exists( 'have_rows' ) || ! have_rows( 'page_sections' ) ) {
-	return;
-}
-
-while ( have_rows( 'page_sections' ) ) {
-	the_row();
-	get_template_part(
-		'template-parts/sections/' . str_replace( '_', '-', get_row_layout() ),
-		null,
-		array( 'index' => get_row_index() )
-	);
-}
-```
+Blocks print their own markup; there is no section loop. Page templates (Home, About, ...) are
+registered with a `Template Name` header and map to a block list in `inc/block-templates.php`.
 
 ## header.php (skeleton)
 

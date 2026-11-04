@@ -77,7 +77,7 @@ second run with another URL adds to the existing map instead of replacing it.
    layer name.
 4. Detect **repeats**: the same section on several pages, or the same component
    (card, button, badge; `INSTANCE` nodes of one component). Repeated sections
-   become one Flexible Content layout; repeated components become
+   become one ACF block (its pattern variants are the block's `type` select); repeated components become
    `template-parts/components/`.
 5. Detect **CPT candidates**: repeated content items with their own detail page
    or listing (lawyers, practice areas, news, projects, team, testimonials).
@@ -120,7 +120,7 @@ top (custom properties cannot be used in media queries).
 ## Step 4 - reference renders
 
 `images` for each in-scope page frame (`--name <page>-<width>`) and for each
-section node (`--name section-<layout>-<width>`) into `blueprint/reference/`.
+section node (`--name section-<block>-<width>`) into `blueprint/reference/`.
 These are the visual targets for `/section` and `/pixel-check`. View them to
 confirm the section split from Step 1.
 
@@ -135,7 +135,7 @@ Write `blueprint/design/design-system.md` with these sections:
 - **Fonts** - families, weights, loading method
 - **Global parts** - header and footer: node ids per breakpoint, options-page
   fields, menu locations
-- **Section inventory** - table: layout name (snake_case), role, node id per
+- **Section inventory** - table: block name (snake_case), role, node id per
   breakpoint, pages using it, proposed ACF fields (name, type), JS needed?
 - **Components** - reusable pieces and their node ids
 - **Content types** - CPT candidates with fields, taxonomies, archive and single

@@ -1,6 +1,6 @@
 # Section example: hero
 
-ACF layout `hero`, files `hero.php`, `hero.css`, `hero.js`. Field shapes are in
+ACF block `hero`, files `blocks/hero/block.json`, `hero.php`, `hero.css`, `hero.js`. Field shapes are in
 `../../acf/reference/acf-json.md`.
 
 ## template-parts/sections/hero.php
@@ -9,21 +9,23 @@ ACF layout `hero`, files `hero.php`, `hero.css`, `hero.js`. Field shapes are in
 <?php
 defined( 'ABSPATH' ) || exit;
 
-$eyebrow = get_sub_field( 'eyebrow' );
-$heading = get_sub_field( 'heading' );
-$text    = get_sub_field( 'text' );
-$image   = get_sub_field( 'image' );
-$button  = get_sub_field( 'button' );
+$pretitle = get_field( 'pretitle' );
+$heading  = get_field( 'heading' );
+$text     = get_field( 'text' );
+$image    = get_field( 'image' );
+$button   = get_field( 'button' );
+$hidden   = (bool) get_field( 'hide_block' );
 
-if ( ! $heading ) {
+// Hidden blocks are not rendered on the front end (the editor preview shows them dimmed).
+if ( ! $heading || ( $hidden && empty( $is_preview ) ) ) {
 	return;
 }
 ?>
-<section class="hero" data-section="hero">
+<section <?php echo get_block_wrapper_attributes( array( 'class' => 'hero' . ( $hidden ? ' is-hidden-preview' : '' ), 'data-section' => 'hero', 'data-animate' => 'fadeInUp' ) ); ?>>
 	<div class="container hero__inner">
 		<div class="hero__content">
-			<?php if ( $eyebrow ) : ?>
-				<p class="hero__eyebrow"><?php echo esc_html( $eyebrow ); ?></p>
+			<?php if ( $pretitle ) : ?>
+				<p class="hero__pretitle"><?php echo esc_html( $pretitle ); ?></p>
 			<?php endif; ?>
 
 			<h1 class="hero__title"><?php echo esc_html( $heading ); ?></h1>
@@ -92,7 +94,7 @@ if ( empty( $link['url'] ) ) {
 	align-items: center;
 }
 
-.hero__eyebrow {
+.hero__pretitle {
 	font-size: var(--fs-eyebrow);
 	letter-spacing: var(--ls-eyebrow);
 	text-transform: uppercase;

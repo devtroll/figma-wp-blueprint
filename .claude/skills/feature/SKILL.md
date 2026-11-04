@@ -2,6 +2,7 @@
 name: feature
 description: Turn the next, named, or numbered build-plan feature into a buildable current-feature.md spec with small steps and done-when criteria. Use for /feature, planning a feature, or starting planned work.
 disable-model-invocation: true
+model: opus
 ---
 
 # feature - create the active implementation spec
@@ -172,7 +173,7 @@ section, page, or CPT template at each designed breakpoint (from
 `blueprint/design/design-system.md`) and links the screenshots in
 `blueprint/reference/`. Stop and ask for `/figma <url>` when the node IDs are
 missing. Build steps for WordPress work follow the recipes: `/wp-theme` for the
-theme foundation, `/section` for one Flexible Content section per step, `/acf`
+theme foundation, `/section` for one ACF block per step, `/acf`
 for field changes, `/cpt` for post types. Each visual step's `Done when`
 includes a `/pixel-check` pass at every designed breakpoint, and each step
 names the reused sections it does not rebuild.

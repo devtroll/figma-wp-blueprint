@@ -48,8 +48,8 @@ If there's no current feature spec, ask what to verify rather than guessing.
 Use the project's real commands (see Commands in `AGENTS.md`). Match the project
 type:
 
-- **WordPress site** - the LocalWP site must be running; if the local URL does
-  not load, ask the user to start it in LocalWP (never start servers yourself).
+- **WordPress site** - the DDEV site must be running; if the local URL does
+  not load, ask the user to run `ddev start` (never start servers yourself).
   Drive a real browser (for example the Playwright MCP) to the relevant pages,
   archives, and singles. Check the admin edit screens show the expected ACF
   fields and options page. Read `wp-content/debug.log` before and after: any new

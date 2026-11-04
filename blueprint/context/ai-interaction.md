@@ -1,7 +1,7 @@
 # AI Interaction Guidelines
 
-> **figma-wp-blueprint lives inside the theme folder** of a LocalWP site
-> (`app/public/wp-content/themes/<theme-slug>/`). The theme skeleton itself is
+> **figma-wp-blueprint lives inside the theme folder** of a DDEV site
+> (`wp-content/themes/<theme-slug>/`). The theme skeleton itself is
 > created by `/wp-theme`; never install starter themes or page builders over it.
 
 ## Communication
@@ -14,9 +14,7 @@
 
 ## Output formatting
 
-Format every response for fast scanning, in whatever tool renders it. The skills
-point at this file for formatting, so tune this to taste and the change applies
-everywhere.
+Format every response for fast scanning, in whatever tool renders it (skills point at this file for formatting, so a change here applies everywhere).
 
 - **Real markdown, not prose walls** - bold field labels, short lines, a blank line between blocks.
 - **Enumerations are lists** - a sequence of steps, options, or findings is a numbered or bulleted list, never an inline `(1)... (2)... (3)...` run crammed into a paragraph.
@@ -30,33 +28,11 @@ everywhere.
 The loop we use for every feature. The spec for the feature being built lives in
 @blueprint/context/current-feature.md.
 
-Run `/feature` (or `/fix` for a bug or change that isn't a planned feature) to
-write the spec and approve it before `/implement` builds it on a branch. Use
-`/check` to prove behavior, `/audit` to review code and record findings, and
-`/complete` to log the work and merge with approval. This teaching path does not
-change the configured gates; Audit is not mandatory for every feature.
-`/check guide` only explains how the user can test the work and never runs checks
-or records acceptance. The numbered loop below is what those skills follow.
-
-Before planning, `/explore <topic>` investigates an idea against the actual code
-without requiring plans or writing files. `/brief` instead explains an existing
-build-plan item. Run these skills in Claude Code chat as slash commands, not as
-terminal commands.
-
-After the first successful `/overview`, Blueprint offers a reviewed local commit
-for the initial workflow setup and plans before Feature 1. It shows the exact
-candidate diff and asks first. It skips local-only installations and stops
-rather than mixing app source or unrelated work into the baseline. When setup
-work is on a dedicated branch, the same approval can finalize the local baseline
-and fast-forward it into the unchanged default branch. It never pushes.
-
-The skills are the structured path, not a requirement. You can also just describe
-a feature, fix, or change in chat at any time and we'll build it the same way; the
-rules below still apply (small steps, a reviewable diff, the conventions in
-`coding-standards.md`). Project instructions tell the agent to read these files
-when the work needs them instead of carrying them through every unrelated turn.
-Use the skills when you want the repeatable loop and the logging; prompt directly
-when you just want something done.
+- `/feature` (or `/fix` for an unplanned bug/change) writes and approves the spec before `/implement` builds it on a branch.
+- `/check` proves behavior, `/audit` reviews code and records findings, `/complete` logs and merges with approval - none of this changes the configured gates, and Audit is not mandatory per feature. `/check guide` only explains manual testing; it never runs checks or records acceptance. The numbered loop below is what these skills follow.
+- `/explore <topic>` investigates an idea against the code without plans or files; `/brief` explains an existing build-plan item instead. Both run as Claude Code chat slash commands, not terminal commands.
+- After the first successful `/overview`, Blueprint offers a reviewed local commit for the initial setup and plans before Feature 1 (exact diff shown, asks first; skips local-only installs; never mixes unrelated work into the baseline). On a dedicated setup branch, the same approval can finalize the baseline and fast-forward it into the unchanged default branch. It never pushes.
+- Skills are the structured path, not a requirement - describing a feature, fix, or change in chat builds it the same way (small steps, reviewable diff, `coding-standards.md` conventions). Use the skills for the repeatable loop and logging; prompt directly when you just want something done.
 
 1. **Spec** - Optionally run `/brief` first for a read-only preview of the next
    feature (scope, dependencies, size); it writes nothing. Then run `/feature`
@@ -73,7 +49,7 @@ when you just want something done.
    checkpoint settings.
 5. **Test** - Verify the done-when with evidence. Run the exact `Verify` command
    from `AGENTS.md` (PHP lint plus ACF JSON validity) as the final automated gate.
-   Load the page in the LocalWP site and confirm no PHP notices in the debug log
+   Load the page in the DDEV site and confirm no PHP notices in the debug log
    and no browser console errors. Visual steps need `/pixel-check` against the
    Figma frame at every designed breakpoint. See the Testing and Pixel-perfect
    sections of `coding-standards.md`.
@@ -97,30 +73,11 @@ when you just want something done.
    happen through `/implement` or `/fix`.
 8. **Iterate** - If it doesn't work or needs changes, re-prompt or hand-edit and
    re-test; repeat until it works, before moving on.
-9. **Checkpoint (optional)** - checkpoint commits are disabled by default. When
-   enabled with per-step review, `/implement` offers continue, commit a
-   checkpoint, walk me through it, or stop here after an approved step. The
-   checkpoints are optional rollback points; `/complete` still makes the real
-   feature-level commit. Verify, or the fallback checks, must pass first. When
-   implementation is done, end with a compact review packet: changed files,
-   checks run, the generated `## Try it now` section when applicable, risks, and
-   next action. The per-step walkthrough
-   is part of the Guided checkpoint prompt. The final code walkthrough is always
-   available and is separate from the manual product-review path produced by
-   `/check guide`.
-
-`workflow.stepReview: "every"` restores per-step approval pauses but does not
-enable checkpoint prompts by itself. The previous workflow uses
-`stepReview: "every"` together with `checkpointCommits: "enabled"`.
-10. **Safety + log** - `/complete` first checks the active spec, branch, changed
-   files, Verify or fallback check evidence, manual try path, and adapter sync when
-   workflow files changed. Then it archives the spec using its frozen build attempt:
-   `blueprint/history/features/NN-name.md` for the first build and
-   `NN-name--build-N.md` for rebuilds, preserving earlier archives and the stable
-   plan ID (fixes use `blueprint/history/fixes/`). It checks the feature off in
-   `blueprint/build-plan.md`, and
-   resets `blueprint/context/current-feature.md` and
-   `blueprint/context/review.md` to their stubs.
+9. **Checkpoint (optional)** - checkpoint commits are disabled by default.
+   - Enabled with per-step review: after an approved step, `/implement` offers continue, commit a checkpoint, walk me through it, or stop here. Checkpoints are optional rollback points; `/complete` still makes the real feature-level commit. Verify (or the fallback checks) must pass first.
+   - When implementation is done: a compact review packet (changed files, checks run, `## Try it now` when applicable, risks, next action). The per-step walkthrough is part of the Guided checkpoint prompt; the final code walkthrough is always available, separate from `/check guide`'s manual product-review path.
+   - `workflow.stepReview: "every"` restores per-step approval pauses but does not enable checkpoint prompts by itself; the previous workflow combines `stepReview: "every"` with `checkpointCommits: "enabled"`.
+10. **Safety + log** - `/complete` checks the active spec, branch, changed files, Verify or fallback check evidence, manual try path, and adapter sync when workflow files changed. Then it archives the spec by its frozen build attempt (`blueprint/history/features/NN-name.md` for the first build, `NN-name--build-N.md` for rebuilds, preserving earlier archives and the stable plan ID; fixes use `blueprint/history/fixes/`), checks the feature off in `blueprint/build-plan.md`, and resets `blueprint/context/current-feature.md` and `blueprint/context/review.md` to their stubs.
 11. **Feature commit** - `/complete` stages everything on the branch (step work
    plus the logging changes) into one conventional feature commit.
 12. **Land** - `/complete` follows `git.landing`. The default local path asks to
@@ -174,16 +131,9 @@ preserving all other settings in the existing JSON:
 }
 ```
 
-Empty strings suppress the default commit trailer and PR attribution text.
-`sessionUrl: false` also omits session links from cloud and Remote Control
-commits and PRs. The older `includeCoAuthoredBy` setting is deprecated.
-
-Older Codex advice to set `commit_attribution = ""` is outdated: current Codex
-[no longer supports that TOML key](https://github.com/openai/codex/commit/d18a7c982e4abad5bf549cda6f4b61a18c10702e).
-
-These settings are optional; the installer does not change your tool
-configuration. Guidance and settings reduce unwanted attribution but do not
-enforce commit or PR message contents. Review the final text before submitting it.
+- Empty strings suppress the default commit trailer and PR attribution text; `sessionUrl: false` also omits session links from cloud and Remote Control commits and PRs. The older `includeCoAuthoredBy` setting is deprecated.
+- Older Codex advice to set `commit_attribution = ""` is outdated: current Codex [no longer supports that TOML key](https://github.com/openai/codex/commit/d18a7c982e4abad5bf549cda6f4b61a18c10702e).
+- These settings are optional; the installer does not change your tool configuration. They reduce unwanted attribution but do not enforce commit or PR message contents - review the final text before submitting it.
 
 ## When Stuck
 

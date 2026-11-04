@@ -19,9 +19,9 @@ information).
 
 ## 3. Pages
 
-One line per page with its template: `Home - front-page.php, flexible sections`.
+One line per page with its template: `Home - front-page.php, blocks`.
 
-## 4. Sections (Flexible Content layouts)
+## 4. Sections (ACF blocks)
 
 One line per reusable section from Figma, with the pages that use it. `/figma`
 fills this from the design.

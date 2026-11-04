@@ -1,6 +1,6 @@
 ---
 name: onboard
-description: Set up a new figma-wp-blueprint theme project after copying the workflow files into a LocalWP theme folder - confirm Git, LocalWP site, theme identity, ACF Pro, Figma token, browser automation, PHP CLI, commands, and review preferences. Use for /onboard or what to do after installing the workflow.
+description: Set up a new figma-wp-blueprint theme project after copying the workflow files into a DDEV theme folder - confirm Git, DDEV site, theme identity, ACF Pro, Figma token, browser automation, PHP CLI, commands, and review preferences. Use for /onboard or what to do after installing the workflow.
 disable-model-invocation: true
 ---
 
@@ -14,7 +14,7 @@ contract in `AGENTS.md`.
 
 Where this sits in the workflow:
 
-    LocalWP site  ->  copy workflow files  ->  [onboard]  ->  /figma <url>  ->  /overview
+    DDEV site  ->  copy workflow files  ->  [onboard]  ->  /figma <url>  ->  /overview
     (user)            into the theme folder     (tune setup)
 
 ## Input
@@ -24,11 +24,11 @@ hint and verify it.
 
 ## Step 0 - location and Git
 
-1. Confirm the working directory is a theme folder inside a LocalWP site: the
-   path looks like `.../app/public/wp-content/themes/<slug>/` and
+1. Confirm the working directory is a theme folder inside a DDEV site: the
+   path looks like `.../wp-content/themes/<slug>/` and
    `../../../wp-config.php` exists. If the directory is elsewhere, stop and tell
-   the user to create the site in LocalWP, create
-   `app/public/wp-content/themes/<theme-slug>/`, copy `AGENTS.md`, `CLAUDE.md`,
+   the user to create the DDEV WordPress project, create
+   `wp-content/themes/<theme-slug>/`, copy `AGENTS.md`, `CLAUDE.md`,
    `.claude/`, and `blueprint/` into it, and reopen Claude Code there.
 2. Confirm Git (`git rev-parse --is-inside-work-tree`). If it is not a repo, ask
    once: `Initialize Git in the theme folder? (Recommended)`. On yes run
@@ -44,11 +44,11 @@ Ask only for what you cannot detect:
   domain)
 - **Function prefix** - short, lowercase, underscore-safe, derived from the slug
   (`acme-studio` -> `acme`). Confirm it.
-- **Local URL** - from the LocalWP site domain (`<site>.local`)
+- **Local URL** - from the DDEV project URL (`ddev describe`) (`<site>.ddev.site`)
 
 Write these into the Project identity section of
 `blueprint/context/coding-standards.md` (replacing the `<theme-slug>`,
-`<prefix>_`, and `http://<site>.local` placeholders) and the Commands section of
+`<prefix>_`, and `https://<site>.ddev.site` placeholders) and the Commands section of
 `AGENTS.md`.
 
 ## Step 2 - environment checks
@@ -57,12 +57,12 @@ Check each and report a table of `ok`, `missing`, or `ask user`:
 
 | Check | How |
 | --- | --- |
-| PHP CLI | `php -v`. If missing, tell the user to run Claude Code from LocalWP's **Open site shell**, or add LocalWP's PHP to `PATH`. |
+| PHP CLI | `php -v`. If missing, tell the user to install PHP on the host or run the check through `ddev exec php -l`. |
 | `WP_DEBUG` | read `wp-config.php`: `WP_DEBUG`, `WP_DEBUG_LOG` true locally; suggest `WP_DEBUG_DISPLAY` false so notices go to `wp-content/debug.log`. Show the lines; edit only with approval. |
 | ACF Pro | `wp-content/plugins/advanced-custom-fields-pro/` exists. Active state needs the user or WP-CLI (`wp plugin list` in the site shell). |
 | Figma token | `node .claude/skills/figma/scripts/figma.mjs check`. If missing: create a personal access token at figma.com > Settings > Security (scope: file content, read-only) and have the user add `FIGMA_TOKEN=...` to `.env` themselves. Never ask them to paste the token in chat. |
 | Browser automation | a browser MCP (for example Playwright) is available. If not: `claude mcp add playwright -- npx @playwright/mcp@latest`. Needed by `/pixel-check` and `/check`. |
-| Site loads | fetch the local URL; if it fails, ask the user to start the site in LocalWP. |
+| Site loads | fetch the local URL; if it fails, ask the user to start the site in DDEV. |
 
 Never install plugins or MCP servers yourself; give the exact command.
 

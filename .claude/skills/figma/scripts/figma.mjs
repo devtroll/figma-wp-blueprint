@@ -12,7 +12,7 @@ const CACHE_DIR = "blueprint/.state/figma";
 const USAGE = `Usage: node .claude/skills/figma/scripts/figma.mjs <command> [url] [options]
 
 Commands:
-  check                      verify the token works
+  check   [url]              verify the token with a file call (URL from design-system.md if omitted)
   parse   <url>              show file key and node id from a Figma URL
   outline <url> [--depth N]  print the layer tree (default depth 3)
   node    <url> [--depth N] [--out file]
@@ -35,7 +35,7 @@ async function main() {
 
   switch (command) {
     case "check":
-      return check();
+      return check(url);
     case "parse":
       return console.log(JSON.stringify(parseUrl(url), null, 2));
     case "outline":
@@ -99,15 +99,38 @@ async function api(path, attempt = 0) {
     await new Promise((r) => setTimeout(r, wait * 1000));
     return api(path, attempt + 1);
   }
-  if (response.status === 403) throw new Error("403 from Figma: token invalid, expired, or no access to this file.");
+  if (response.status === 403) {
+    const body = await response.json().catch(() => ({}));
+    const reason = body.message ?? body.err;
+    throw new Error(
+      `403 from Figma${reason ? ` (${reason})` : ""}: token invalid, expired, missing a scope, or no access to this file.`
+    );
+  }
   if (response.status === 404) throw new Error("404 from Figma: file or node not found (check the URL and file access).");
   if (!response.ok) throw new Error(`Figma API ${response.status}: ${await response.text()}`);
   return response.json();
 }
 
-async function check() {
-  const me = await api("/me");
-  console.log(`Token OK for ${me.handle}.`);
+// A file call needs only the scope "File content: read-only"; /me would need an extra scope.
+async function check(url) {
+  await token();
+  const source = process.env.FIGMA_TOKEN ? "FIGMA_TOKEN variable" : ".env";
+  const target = url ?? (await designSystemUrl());
+  if (!target) {
+    console.log(`Token found (${source}). Pass a Figma URL to test the access to a file.`);
+    return;
+  }
+  const { fileKey } = parseUrl(target);
+  const file = await api(`/files/${fileKey}?depth=1`);
+  console.log(`Token OK. File: ${file.name}.`);
+}
+
+// First Figma URL in the "Source" section of the design map, when the design map exists.
+async function designSystemUrl() {
+  const path = resolve("blueprint/design/design-system.md");
+  if (!existsSync(path)) return null;
+  const match = (await readFile(path, "utf8")).match(/https:\/\/www\.figma\.com\/(?:design|file|proto|board)\/[^\s`)>]+/);
+  return match ? match[0] : null;
 }
 
 async function fetchNode({ fileKey, nodeId }, depth) {

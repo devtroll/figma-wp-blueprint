@@ -1,6 +1,6 @@
 ---
 name: wp-theme
-description: Scaffold the classic WordPress theme foundation from the Figma design map - style.css, functions.php, inc/ setup, asset enqueueing, ACF local JSON and options page, the Flexible Content page builder loop, header, footer, tokens, and base CSS. Use for /wp-theme, theme foundation, or the first build-plan feature.
+description: Scaffold the classic WordPress theme foundation from the Figma design map - style.css, functions.php, inc/ setup, asset enqueueing, ACF local JSON and options page, ACF block registration for the Gutenberg editor with page block templates and role-based editing, header, footer, tokens, and base CSS. Use for /wp-theme, theme foundation, or the first build-plan feature.
 disable-model-invocation: true
 ---
 
@@ -50,8 +50,7 @@ notices.
 
 1. **Theme bootstrap** - `style.css` header, `functions.php`, `inc/setup.php`
    (title tag, post thumbnails, HTML5, custom logo, menu locations from the
-   design, image sizes the design needs, block editor disabled for pages so
-   the page builder is the only page editing UI), `inc/helpers.php`, `index.php`,
+   design, image sizes the design needs; the block editor (Gutenberg) stays enabled, it is the standard editor), `inc/helpers.php`, `index.php`,
    `404.php`. *Done when:* the theme activates and the home page renders with no
    notices in `debug.log`.
 2. **Tokens and base CSS** - copy `blueprint/design/tokens.css` to
@@ -62,15 +61,21 @@ notices.
    *Done when:* the browser shows the Figma fonts and body styles and both files
    load with `filemtime` versions.
 3. **ACF setup** - `inc/acf.php` (local JSON save/load to `acf-json/`, `Theme
-   Settings` options page, admin notice when ACF Pro is missing), the
-   `group_theme_settings` field group for header and footer data, and
-   `group_page_builder` with an empty `page_sections` Flexible Content field.
-   *Done when:* Theme Settings appears in the admin and pages show an empty
-   Sections field.
-4. **Page builder loop** - `page.php` and `template-parts/flexible-content.php`
-   that render each layout from `template-parts/sections/<layout>.php`.
-   *Done when:* a page with no sections renders header and footer only, without
-   notices.
+   Settings` options page, admin notice when ACF Pro is missing) and the
+   `group_theme_settings` field group for header and footer data.
+   *Done when:* Theme Settings appears in the admin.
+4. **Block setup** - `inc/blocks.php`: registers every `blocks/*/block.json`
+   (ACF blocks, render template `template-parts/sections/<block>.php`), a
+   block category, the allowed blocks (the theme's own blocks plus the few core
+   blocks the plan names), page block templates per page template with
+   `template_lock` `insert` for editors (moving and hiding allowed, adding and
+   deleting not) and no lock for administrators, an administrator-only free page
+   template, and the shared `hide_block` handling; `page.php` renders
+   `the_content()`. Layout fields (`type`, background, alignment, image side)
+   live in a separate field group restricted to the administrator role. Also the
+   shared animate.css scroll-in script. *Done when:* a page renders header and
+   footer with `the_content()` without notices, and an editor account cannot add
+   or delete blocks while an administrator can.
 5. **Header** - `header.php` built from the Figma header node at every
    breakpoint, logo from the options page or custom logo, `wp_nav_menu`, mobile
    menu toggle in `assets/js/main.js` with `aria-expanded` and keyboard support.
@@ -87,9 +92,9 @@ in `../acf/reference/acf-json.md`. Replace every `{prefix}`, `{text-domain}`, an
 
 - Follow `blueprint/context/coding-standards.md` exactly; it wins over the
   reference templates when they disagree.
-- No starter theme, no `_s` download, no page builder plugin, no npm.
+- No starter theme, no `_s` download, no page builder plugin, no Flexible Content page builder (sections are ACF blocks), no npm.
 - Never edit files outside the theme folder.
-- Header and footer are part of this feature; page sections are not. Sections
+- Header and footer are part of this feature; page sections are not. Blocks
   are built in later features with `/section`.
 
 ## Formatting

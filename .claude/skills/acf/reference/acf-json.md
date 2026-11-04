@@ -4,91 +4,85 @@ ACF fills defaults for omitted field settings when it loads local JSON, so keep
 files readable: include `key`, `label`, `name`, `type`, and the settings that
 matter. Set `modified` to the current Unix time on every edit.
 
-## Page builder: group_page_builder.json
+## ACF block: block.json
 
-One Flexible Content field. Each layout holds a single seamless Clone of its
-section group, so section fields live in their own file.
+One file per block in `blocks/<block>/block.json`; the theme registers it with `register_block_type()`.
 
 ```json
 {
-  "key": "group_page_builder",
-  "title": "Page Builder",
+  "$schema": "https://schemas.wp.org/trunk/block.json",
+  "apiVersion": 3,
+  "name": "acf/hero",
+  "title": "Hero",
+  "category": "{prefix}-sections",
+  "icon": "cover-image",
+  "description": "Page header",
+  "acf": { "mode": "preview", "renderTemplate": "template-parts/sections/hero.php" },
+  "supports": { "anchor": false, "align": false, "customClassName": false, "html": false, "color": false, "typography": false, "spacing": false },
+  "style": "file:../../assets/css/sections/hero.css",
+  "script": "file:../../assets/js/sections/hero.js"
+}
+```
+
+The block key is English snake_case or kebab-case (`hero`), the `title` and
+field labels use the site's editing language. Variants of a Figma pattern are a `type` select in the
+layout group.
+
+## Block content group: group_block_hero.json
+
+Content fields only: what the client may change (texts, images, lists) plus
+`hide_block`. Templates read them with `get_field()` (inside a block render
+template ACF resolves the block's own fields).
+
+```json
+{
+  "key": "group_block_hero",
+  "title": "Block: Hero",
   "fields": [
+    { "key": "field_block_hero_hide_block", "label": "Hide block", "name": "hide_block", "type": "true_false", "ui": 1 },
+    { "key": "field_block_hero_pretitle", "label": "Pretitle", "name": "pretitle", "type": "text" },
+    { "key": "field_block_hero_heading", "label": "Heading", "name": "heading", "type": "text", "required": 1 },
+    { "key": "field_block_hero_text", "label": "Text", "name": "text", "type": "wysiwyg", "tabs": "visual", "toolbar": "basic", "media_upload": 0 },
+    { "key": "field_block_hero_image", "label": "Bild", "name": "image", "type": "image", "return_format": "id", "preview_size": "medium" },
+    { "key": "field_block_hero_button", "label": "Button", "name": "button", "type": "link", "return_format": "array" },
     {
-      "key": "field_page_builder_page_sections",
-      "label": "Sections",
-      "name": "page_sections",
-      "type": "flexible_content",
-      "button_label": "Add Section",
-      "layouts": {
-        "layout_hero": {
-          "key": "layout_hero",
-          "name": "hero",
-          "label": "Hero",
-          "display": "block",
-          "sub_fields": [
-            {
-              "key": "field_layout_hero_clone",
-              "label": "Hero",
-              "name": "hero",
-              "type": "clone",
-              "clone": ["group_section_hero"],
-              "display": "seamless",
-              "layout": "block",
-              "prefix_label": 0,
-              "prefix_name": 0
-            }
-          ]
-        }
-      }
+      "key": "field_block_hero_items",
+      "label": "Items",
+      "name": "items",
+      "type": "repeater",
+      "layout": "block",
+      "button_label": "Add item",
+      "sub_fields": [
+        { "key": "field_block_hero_items_title", "label": "Titel", "name": "title", "type": "text" }
+      ]
     }
   ],
   "location": [
-    [{ "param": "post_type", "operator": "==", "value": "page" }]
+    [{ "param": "block", "operator": "==", "value": "acf/hero" }]
   ],
-  "position": "normal",
-  "style": "seamless",
-  "label_placement": "top",
-  "hide_on_screen": ["the_content"],
   "active": true,
   "modified": 1760000000
 }
 ```
 
-To add a section, add one entry under `layouts` with keys `layout_<layout>` and
-`field_layout_<layout>_clone`.
+## Block layout group: group_block_hero_layout.json
 
-## Section group: group_section_hero.json
-
-Inactive, so it only appears through the clone. Templates read these with
-`get_sub_field()` because the seamless clone keeps the original names.
+Design settings, visible to administrators only (the location rule combines the block with the user role).
 
 ```json
 {
-  "key": "group_section_hero",
-  "title": "Section: Hero",
+  "key": "group_block_hero_layout",
+  "title": "Block: Hero (Layout)",
   "fields": [
-    { "key": "field_section_hero_eyebrow", "label": "Eyebrow", "name": "eyebrow", "type": "text" },
-    { "key": "field_section_hero_heading", "label": "Heading", "name": "heading", "type": "text", "required": 1 },
-    { "key": "field_section_hero_text", "label": "Text", "name": "text", "type": "wysiwyg", "tabs": "visual", "toolbar": "basic", "media_upload": 0 },
-    { "key": "field_section_hero_image", "label": "Image", "name": "image", "type": "image", "return_format": "id", "preview_size": "medium" },
-    { "key": "field_section_hero_button", "label": "Button", "name": "button", "type": "link", "return_format": "array" },
-    {
-      "key": "field_section_hero_items",
-      "label": "Items",
-      "name": "items",
-      "type": "repeater",
-      "layout": "block",
-      "button_label": "Add Item",
-      "sub_fields": [
-        { "key": "field_section_hero_items_title", "label": "Title", "name": "title", "type": "text" }
-      ]
-    }
+    { "key": "field_block_hero_layout_type", "label": "Variant", "name": "type", "type": "select", "choices": { "image_left": "Image left", "image_right": "Image right", "basic": "Basic" }, "default_value": "image_right" }
   ],
   "location": [
-    [{ "param": "post_type", "operator": "==", "value": "post" }]
+    [
+      { "param": "block", "operator": "==", "value": "acf/hero" },
+      { "param": "current_user_role", "operator": "==", "value": "administrator" }
+    ]
   ],
-  "active": false,
+  "active": true,
   "modified": 1760000000
 }
 ```
@@ -136,11 +130,11 @@ Inactive, so it only appears through the clone. Templates read these with
 
 | Field type | Read | Output |
 | --- | --- | --- |
-| text, textarea | `get_sub_field( 'heading' )` | `esc_html( $heading )` |
-| wysiwyg | `get_sub_field( 'text' )` | `wp_kses_post( $text )` |
-| image (ID) | `get_sub_field( 'image' )` | `wp_get_attachment_image( $image, 'large', false, array( 'class' => 'x__image' ) )` |
-| link (array) | `get_sub_field( 'button' )` | `esc_url( $button['url'] )`, `esc_html( $button['title'] )`, `esc_attr( $button['target'] ?: '_self' )` |
-| url | `get_sub_field( 'url' )` | `esc_url( $url )` |
+| text, textarea | `get_field( 'heading' )` | `esc_html( $heading )` |
+| wysiwyg | `get_field( 'text' )` | `wp_kses_post( $text )` |
+| image (ID) | `get_field( 'image' )` | `wp_get_attachment_image( $image, 'large', false, array( 'class' => 'x__image' ) )` |
+| link (array) | `get_field( 'button' )` | `esc_url( $button['url'] )`, `esc_html( $button['title'] )`, `esc_attr( $button['target'] ?: '_self' )` |
+| url | `get_field( 'url' )` | `esc_url( $url )` |
 | repeater | `have_rows( 'items' )` / `the_row()` / `get_sub_field()` | per sub-field type |
 | option | `{prefix}_option( 'footer_text' )` | per field type |
 | CPT field | `get_field( 'client' )` inside the loop | per field type |

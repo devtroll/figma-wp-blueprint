@@ -1,6 +1,6 @@
 ---
 name: pixel-check
-description: Compare a rendered LocalWP page or section against its Figma frame at every designed breakpoint, measuring computed styles and boxes against Figma values, and report differences without editing code. Use for /pixel-check <local-url> [figma-node-url], pixel-perfect review, design QA, or checking a section against Figma.
+description: Compare a rendered DDEV page or section against its Figma frame at every designed breakpoint, measuring computed styles and boxes against Figma values, and report differences without editing code. Use for /pixel-check <local-url> [figma-node-url], pixel-perfect review, design QA, or checking a section against Figma.
 ---
 
 # pixel-check - measured design QA against Figma
@@ -12,7 +12,7 @@ step) fixes them. It never edits theme files.
 
 ## Input
 
-- a local URL (`http://<site>.local/about/`), optionally with a section selector
+- a local URL (`https://<site>.ddev.site/about/`), optionally with a section selector
   (`.hero`) or layout name
 - a Figma node URL for the page or section. When omitted, look it up in the
   section inventory or global parts of `blueprint/design/design-system.md`.
@@ -24,8 +24,8 @@ step) fixes them. It never edits theme files.
   available, stop and tell the user how to add it:
   `claude mcp add playwright -- npx @playwright/mcp@latest`. Do not pass a check
   from code reading.
-- The LocalWP site is running. If the URL does not load, ask the user to start
-  the site in LocalWP.
+- The DDEV site is running. If the URL does not load, ask the user to run
+  `ddev start`.
 
 ## Steps
 

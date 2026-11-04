@@ -1,6 +1,6 @@
 ---
 name: seo-check
-description: Check rendered LocalWP pages against on-page SEO rules - title, meta description, canonical, indexing, headings, image alt text, links, Open Graph, structured data, robots.txt, and sitemap - and report each problem with where to fix it, without editing code. Asks whether to check all pages, a post type, or specific pages. Use for /seo-check [all | <url or slug> ... | <post-type>], SEO review, or pre-launch SEO checks.
+description: Check rendered DDEV pages against on-page SEO rules - title, meta description, canonical, indexing, headings, image alt text, links, Open Graph, structured data, robots.txt, and sitemap - and report each problem with where to fix it, without editing code. Asks whether to check all pages, a post type, or specific pages. Use for /seo-check [all | <url or slug> ... | <post-type>], SEO review, or pre-launch SEO checks.
 ---
 
 # seo-check - on-page SEO review
@@ -26,9 +26,9 @@ Insights on the live site.
 ## Prerequisites
 
 - Local URL from `blueprint/context/coding-standards.md` (set by `/onboard`).
-  If it is still `http://<site>.local`, ask for the URL.
-- The LocalWP site is running. If the home page does not load, ask the user to
-  start the site in LocalWP.
+  If it is still `https://<site>.ddev.site`, ask for the URL.
+- The DDEV site is running. If the home page does not load, ask the user to
+  run `ddev start`.
 - Node.js 18+ for the helper:
   `node .claude/skills/seo-check/scripts/seo.mjs` (no dependencies, GET and HEAD
   requests only).
@@ -54,7 +54,7 @@ node .claude/skills/seo-check/scripts/seo.mjs pages <local-url> [--type <slug>]
 ```
 
 It reads the sitemap from `robots.txt` or `wp-sitemap.xml`. When "Discourage
-search engines" is on (common in LocalWP), core sitemaps are off, so it falls
+search engines" is on (common on local sites), core sitemaps are off, so it falls
 back to the REST API. If there are more than 50 URLs, show the counts per type
 and ask whether to check them all, one type, or a sample (every page plus up to
 5 of each other post type).
@@ -101,7 +101,7 @@ Read the theme, without editing, to say where each problem is fixed:
 | --- | --- |
 | `<title>` missing or duplicated | `add_theme_support( 'title-tag' )` in `inc/setup.php`; no hard-coded `<title>` in `header.php` |
 | `lang`, viewport, head tags missing | `header.php`: `language_attributes()`, viewport meta, `wp_head()` |
-| No `h1` or several | the section template parts in `template-parts/sections/`; two layouts that both output `h1` on one page; `/section` gives the `h1` only to the first section when the design says so |
+| No `h1` or several | the section template parts in `template-parts/sections/`; two blocks that both output `h1` on one page; `/section` gives the `h1` only to the first section when the design says so |
 | Image `alt` missing | a hard-coded `<img>` in a template (use `wp_get_attachment_image`), or empty alt text in the **Media Library** |
 | Image size attributes, lazy hero | the template's `wp_get_attachment_image` call and its `$attrs` |
 | Placeholder links | an empty ACF link field (content) or a template that prints `#` |

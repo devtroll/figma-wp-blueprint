@@ -11,7 +11,7 @@ Do not renumber completed features; their archived specs refer to those IDs.
 
 A typical order:
 
-1. Theme skeleton, tokens, header, footer, page builder (`/wp-theme`)
+1. Theme skeleton, tokens, header, footer, ACF block setup (`/wp-theme`)
 2. One feature per page, building its new sections (`/section`)
 3. One feature per Custom Post Type, with archive and single templates (`/cpt`)
 4. Global interactions, forms, and final responsive polish
@@ -20,6 +20,6 @@ A typical order:
 
 Replace these examples with your own features:
 
-- [ ] 1. **Theme foundation** - theme skeleton, Figma tokens, base CSS, header, footer, options page, Flexible Content page builder
+- [ ] 1. **Theme foundation** - theme skeleton, Figma tokens, base CSS, header, footer, options page, ACF block setup (Gutenberg)
 - [ ] 2. **Home page** - hero, services, testimonials, CTA sections
 - [ ] 3. **Projects CPT** - projects post type, category taxonomy, archive and single templates

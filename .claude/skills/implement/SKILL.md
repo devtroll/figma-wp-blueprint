@@ -82,9 +82,10 @@ For each step:
 
 For WordPress steps, follow the matching recipe skill: `.claude/skills/wp-theme/`,
 `section/`, `acf/`, or `cpt/` `SKILL.md`, plus `coding-standards.md`. A visual
-step is checked only after `/pixel-check` passes at every designed breakpoint
-(or the user accepts the reported differences) and `debug.log` has no new
-theme notices.
+step is checked after its code and a `php -l` pass and `debug.log` has no new
+theme notices. Run `/pixel-check` once after all steps, for every visual step
+together, at every designed breakpoint (or until the user accepts the reported
+differences). Repair differences as new checklist steps.
 
 With `verification.logicTests: required`, any logic-bearing step stops when no
 test runner is configured. Its focused logic tests

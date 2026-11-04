@@ -17,7 +17,7 @@ const MAX_LINKS = 200;
 
 main().catch((error) => {
   const hint = /certificate|self[- ]signed|UNABLE_TO_VERIFY/i.test(String(error.cause ?? error.message))
-    ? " (LocalWP SSL: use the http:// URL, or trust the LocalWP certificate)"
+    ? " (DDEV SSL: run `mkcert -install` once so the certificate is trusted)"
     : "";
   console.error(`Error: ${error.message}${hint}`);
   process.exit(1);
@@ -182,7 +182,7 @@ async function site(siteUrl) {
       "error",
       "search-visibility",
       "Home page is noindex",
-      "Settings > Reading > 'Discourage search engines' unchecked on the live site (often on in LocalWP on purpose)"
+      "Settings > Reading > 'Discourage search engines' unchecked on the live site (often on locally on purpose)"
     );
 
   const plain = parsed.links.some((l) => /[?&](p|page_id)=\d+/.test(l.href ?? ""));

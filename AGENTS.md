@@ -17,18 +17,18 @@ theme:
 
 - **Design:** Figma URLs, read through the Figma REST API by a local helper
   script (no MCP server needed)
-- **Theme:** classic PHP theme, no page builder
-- **Fields:** ACF Pro (Flexible Content page builder, options page, CPT fields)
+- **Theme:** classic PHP theme (not a block theme), Gutenberg editor as the standard, no page builder plugin
+- **Fields:** ACF Pro (ACF blocks for the Gutenberg editor, options page, CPT fields)
 - **Content types:** Custom Post Types and taxonomies registered in the theme
 - **Styling:** pure CSS with custom properties extracted from Figma
 - **Behavior:** vanilla JavaScript, no jQuery
-- **Local environment:** LocalWP
+- **Local environment:** DDEV
 
 It is built on the AI Blueprint workflow layer: one feature at a time, behind
 review gates, with every spec archived under `blueprint/history/`.
 
-The Git repository root is the theme folder inside the LocalWP site
-(`app/public/wp-content/themes/<theme-slug>/`). Copy these workflow files
+The Git repository root is the theme folder inside the DDEV project
+(`wp-content/themes/<theme-slug>/`). Copy these workflow files
 (`AGENTS.md`, `CLAUDE.md`, `.claude/`, `blueprint/`) into that folder, then run
 `/onboard`. Exclude them from the production theme upload (see Commands).
 
@@ -104,7 +104,7 @@ then per feature:
                /acf, /cpt)                                     quality)          commit)
 ```
 
-1. `/onboard` confirms LocalWP, the theme folder, ACF Pro, and the Figma token,
+1. `/onboard` confirms DDEV, the theme folder, ACF Pro, and the Figma token,
    then fills in project identity and commands.
 2. `/figma <url>` reads the design and writes `blueprint/design/design-system.md`
    (tokens, breakpoints, fonts, section inventory, CPT candidates) plus reference
@@ -112,7 +112,7 @@ then per feature:
 3. You review `blueprint/project-plan.md` and `blueprint/build-plan.md`, then run
    `/overview`.
 4. Feature 1 is normally `/wp-theme`: the theme skeleton, tokens, header, footer,
-   and the Flexible Content page builder.
+   and the ACF block setup (Gutenberg).
 5. Each later feature is a page, a set of sections, or a CPT. `/implement` uses
    the `/section`, `/acf`, and `/cpt` recipes for those steps.
 6. `/pixel-check` compares the built page with Figma at every breakpoint before
@@ -126,12 +126,12 @@ then per feature:
   breakpoints, fonts, assets, and a section inventory into
   `blueprint/design/`, and propose build-plan items
 - `wp-theme` - scaffold the classic theme skeleton: `style.css`, `functions.php`,
-  `inc/`, enqueue, ACF setup, page builder loop, header, footer, base CSS
-- `section` - build one Figma section as a Flexible Content layout: ACF clone
-  group, template part, scoped CSS, and optional vanilla JS
+  `inc/`, enqueue, ACF setup, ACF block registration, header, footer, base CSS
+- `section` - build one Figma section as an ACF block for Gutenberg: `block.json`,
+  field group, render template, scoped CSS, and optional vanilla JS
 - `acf` - create or change ACF field groups as local JSON in `acf-json/`
 - `cpt` - register a Custom Post Type with its taxonomies, templates, and fields
-- `pixel-check` - compare the rendered LocalWP page with the Figma frame at each
+- `pixel-check` - compare the rendered DDEV page with the Figma frame at each
   breakpoint and report measured differences, read-only
 - `seo-check` - check rendered pages (all, one post type, or specific pages)
   against on-page SEO rules and report where to fix each problem, read-only
@@ -198,7 +198,7 @@ boundaries.
 
 ## Required tools
 
-- **LocalWP** with the site running and `WP_DEBUG`, `WP_DEBUG_LOG`, and
+- **DDEV** (`ddev start`) with the site running and `WP_DEBUG`, `WP_DEBUG_LOG`, and
   `WP_DEBUG_DISPLAY` set in `wp-config.php` for local development
 - **ACF Pro** installed and active on the local site
 - **Figma personal access token** (one-time): figma.com > Settings > Security >
@@ -206,20 +206,21 @@ boundaries.
   the theme root as `FIGMA_TOKEN=...` (`.env` is git-ignored). After that, every
   skill takes plain Figma URLs. The helper is
   `node .claude/skills/figma/scripts/figma.mjs` (Node 18+, no dependencies);
-  run it with `check` to test the token. The Figma account that owns the token
-  needs view access to the file.
+  run it with `check [url]` to test the token (a file call; it works with the
+  read-only scope). The Figma account that owns the token needs view access to
+  the file.
 - **Browser automation** for `/pixel-check` and `/check`, such as the Playwright
   MCP server: `claude mcp add playwright -- npx @playwright/mcp@latest`
 - **Node.js 18+** for the Figma and activity helper scripts
-- **PHP CLI** on `PATH` for `php -l` (use LocalWP's **Open site shell** if the
-  system has no PHP)
+- **PHP CLI** on `PATH` for `php -l` (or run `ddev ssh` / `ddev exec php -l` if the
+  host has no PHP)
 
 ## Commands
 
 Set by `/onboard` for the real site. Defaults:
 
-- Local site: `http://<site>.local` (start it from the LocalWP app)
-- Admin: `http://<site>.local/wp-admin`
+- Local site: `https://<site>.ddev.site` (DDEV; start with `ddev start`)
+- Admin: `https://<site>.ddev.site/wp-admin`
 - Debug log: `../../debug.log` (relative to the theme folder)
 - Verify: `find . -name "*.php" -not -path "./vendor/*" -not -path "./node_modules/*" -print0 | xargs -0 -n1 php -l | grep -v "No syntax errors"; for f in acf-json/*.json; do php -r "json_decode(file_get_contents('$f')); exit(json_last_error() ? 1 : 0);" || echo "Invalid JSON: $f"; done`
   (passes when it prints nothing)

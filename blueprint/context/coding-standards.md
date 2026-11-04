@@ -1,18 +1,18 @@
 # Coding Standards
 
 > House conventions for Figma-to-WordPress classic themes: PHP templates, ACF Pro
-> Flexible Content, Custom Post Types, pure CSS, and vanilla JS. No page
-> builders, no CSS frameworks, no jQuery, no build step. `/onboard` fills in the
+> blocks for the Gutenberg editor, Custom Post Types, pure CSS, and vanilla JS. No
+> page builder plugins, no CSS frameworks, no jQuery, no build step. `/onboard` fills in the
 > project-specific values (theme slug, prefix, breakpoints) and leaves the rest.
 
 ## Stack
 
-- Classic PHP theme (not a block theme, no `theme.json`-driven layout)
-- ACF Pro: Flexible Content for page sections, options page for global settings
+- Classic PHP theme (not a block theme, no `theme.json`-driven layout); the Gutenberg editor is the standard
+- ACF Pro: ACF blocks for page sections, options page for global settings
 - Custom Post Types and taxonomies registered in the theme
 - Pure CSS with custom properties, no preprocessor, no Tailwind, no bundler
 - Vanilla JavaScript, no jQuery, no framework, no bundler
-- Local development: LocalWP
+- Local development: DDEV
 - Design source: Figma URLs, read through the Figma REST API helper
   (`.claude/skills/figma/scripts/figma.mjs`)
 
@@ -20,9 +20,9 @@
 
 - Theme slug and text domain: `<theme-slug>` <!-- set by /onboard -->
 - PHP function and hook prefix: `<prefix>_` <!-- set by /onboard -->
-- Local URL: `http://<site>.local` <!-- set by /onboard -->
+- Local URL: `https://<site>.ddev.site` <!-- set by /onboard -->
 - The Git repository root is the theme folder
-  (`app/public/wp-content/themes/<theme-slug>/` inside the LocalWP site), unless
+  (`wp-content/themes/<theme-slug>/` inside the DDEV project), unless
   `AGENTS.md` says otherwise.
 
 ## Theme structure
@@ -41,24 +41,24 @@
     helpers.php                small template helpers
     post-types/<cpt>.php       one CPT and its taxonomies per file
   acf-json/                    ACF local JSON, committed
+  blocks/<block>/block.json    one registration file per ACF block (name, title, render template, assets)
   template-parts/
-    flexible-content.php       loops the page_sections layouts
-    sections/<layout>.php      one file per Flexible Content layout
+    sections/<block>.php       render template of one ACF block
     components/<name>.php      reusable pieces (button, card, media)
   assets/
     css/variables.css          design tokens from Figma
     css/base.css               reset, typography, container, shared utilities
     css/components/<name>.css
-    css/sections/<layout>.css  one file per layout, same name as the PHP part
+    css/sections/<block>.css  one file per block, same name as the PHP part
     js/main.js                 global behavior (header, menu toggle)
-    js/sections/<layout>.js    only when the section has behavior
+    js/sections/<block>.js    only when the section has behavior
     images/  icons/  fonts/
 ```
 
-One section = one name used everywhere: the ACF layout name, the clone group
-`group_section_<layout>`, `template-parts/sections/<layout>.php`,
-`assets/css/sections/<layout>.css`, and optional `assets/js/sections/<layout>.js`.
-Use snake_case for the ACF layout name and kebab-case for the files and CSS class
+One section = one name used everywhere: the ACF block name (`blocks/<block>/block.json`), the field group
+`group_block_<block>`, `template-parts/sections/<block>.php`,
+`assets/css/sections/<block>.css`, and optional `assets/js/sections/<layout>.js`.
+Use snake_case for the ACF block name and field names and kebab-case for the files and CSS class
 (`hero_split` -> `hero-split.php`, `.hero-split`).
 
 ## PHP and WordPress
@@ -79,6 +79,19 @@ Use snake_case for the ACF layout name and kebab-case for the files and CSS clas
 - Hard-coded user-facing strings go through `esc_html__()` or `esc_html_e()` with
   the theme text domain.
 
+### Writing page content from a script
+
+Block data is JSON inside the post content (`\n`, `\u0026`, `\"`). `wp_update_post()`
+unslashes its input, so unslashed content loses every backslash: `\n` becomes `n`, `\u0026` becomes `u0026`. Any one-off script or
+import that saves page content must:
+
+- pass the data as `wp_slash( $data )`;
+- back up the current `post_content` of every post it touches first;
+- compare the backslash count (`substr_count( $content, '\\' )`) before and
+  after the save and stop when it dropped without intent;
+- check the saved content afterwards (block JSON still parses, no `u00xx` without
+  a backslash, no mojibake).
+
 ## Escaping and sanitizing (never skip)
 
 - Escape late, at output, with the function that matches the context:
@@ -96,12 +109,21 @@ Use snake_case for the ACF layout name and kebab-case for the files and CSS clas
   and are committed. Local JSON works without syncing to the database; use
   **Custom Fields > Sync** only when someone needs to edit a group in the admin.
 - When the AI writes JSON directly, use readable deterministic keys:
-  `group_<name>`, `field_<group>_<field>`, `layout_<layout>`. Keys must be
+  `group_<name>`, `field_<group>_<field>`. Keys must be
   unique across the site. Bump `modified` to the current Unix time on every edit.
-- **Page builder:** one field group `group_page_builder` with a Flexible Content
-  field `page_sections`, shown on pages. Each layout contains one seamless Clone
-  field that clones `group_section_<layout>`. Each section group is inactive
-  (`"active": false`) so it only appears through the clone.
+- **Blocks:** each section is an ACF block registered by `blocks/<block>/block.json`
+  (render template `template-parts/sections/<block>.php`). Its fields are one field
+  group `group_block_<block>` located on that block. Variants of a Figma pattern are
+  a `type` select inside the block.
+- **Editing model:** page templates fix the block structure. Editors can move blocks
+  but not add or delete them (`templateLock: 'insert'`), and every block has a content
+  field `hide_block` that hides it on the front end. Layout fields (`type`, background,
+  alignment, image side) live in a separate field group restricted to the administrator
+  role. Administrators are not locked and can use a free page template. Allowed blocks
+  are restricted to the theme's own blocks and the few core blocks the plan names.
+- **Block rendering:** blocks print their own markup and are copyable as a unit. A
+  block that wraps plugin output may offer an optional `shortcode` field that replaces
+  the static markup with `do_shortcode()`.
 - **Global settings:** an ACF options page `Theme Settings` for header and footer
   data (logo, contact info, socials, footer text). Read with
   `get_field( 'name', 'option' )`.
@@ -130,7 +152,8 @@ Use snake_case for the ACF layout name and kebab-case for the files and CSS clas
   spacing, spacing scale, radii, shadows, container width. No raw hex or magic
   numbers in section CSS when a token exists.
 - Mobile-first. Breakpoints match the Figma frames and are listed in
-  `variables.css` and `blueprint/design/design-system.md`. Custom properties
+  `variables.css` and `blueprint/design/design-system.md`. Queries only switch
+  layout; sizes stay fluid with `clamp()`. Custom properties
   cannot be used in media queries, so write the pixel values directly.
 - Sizes: `rem` for type and spacing (Figma px / 16), `px` for borders and hairlines.
   Use `clamp()` between the mobile and desktop Figma values for fluid type and
@@ -145,9 +168,13 @@ Use snake_case for the ACF layout name and kebab-case for the files and CSS clas
 
 ## JavaScript (vanilla)
 
-- No jQuery, no libraries unless the spec approves one (for example a slider).
-- One file per behavior. Each section script finds its roots by
-  `[data-section="<layout>"]`, returns early when none exist, and keeps no
+- No jQuery, no libraries unless the spec approves one (for example a slider). animate.css
+  (self-hosted in `assets/css/vendor/`, no CDN) is the default for entrance animations: one
+  shared scroll-in script (IntersectionObserver), per-block animation names in `data-animate`
+  attributes, content stays visible without JS, and `prefers-reduced-motion` turns the
+  animations off.
+- One file per behavior. Each block script finds its roots by
+  `[data-section="<block>"]`, returns early when none exist, and keeps no
   globals (wrap in a block or IIFE).
 - Hook JS to `data-` attributes, not styling classes.
 - Toggle state with classes and ARIA attributes (`aria-expanded`,
@@ -197,10 +224,12 @@ each step is:
 
 - `php -l` on every changed PHP file (part of `Verify` in `AGENTS.md`)
 - valid JSON in every changed `acf-json/*.json`
-- the page rendering in the LocalWP site with no PHP notices or warnings
+- the page rendering in the DDEV site with no PHP notices or warnings
   (`WP_DEBUG` and `WP_DEBUG_LOG` on in `wp-config.php` locally) and no browser
   console errors
 - `/pixel-check` for visual steps
+- for a step that writes page content from a script: the saved content is
+  checked (see "Writing page content from a script")
 
 Do not add PHPUnit, Playwright, or a bundler mid-feature. Adding tooling is its
 own reviewed step.
