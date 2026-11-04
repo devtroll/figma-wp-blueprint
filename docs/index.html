@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <title>figma-wp-blueprint</title>
-<meta name="description" content="Claude Code skills that turn a Figma URL into a pixel-perfect custom WordPress theme: ACF Pro Flexible Content, Custom Post Types, pure CSS, vanilla JS, LocalWP.">
+<meta name="description" content="Claude Code skills that turn a Figma URL into a pixel-perfect custom WordPress theme: ACF Pro blocks for Gutenberg, Custom Post Types, pure CSS, vanilla JS, DDEV.">
 <meta property="og:title" content="figma-wp-blueprint">
 <meta property="og:description" content="From a Figma URL to a pixel-perfect custom WordPress theme, built with Claude Code.">
 <meta property="og:type" content="website">
@@ -266,7 +266,7 @@ pre.code .f { color: #F5B97F; }
       <a href="#workflow">Workflow</a>
       <a href="#skills">Skills</a>
       <a href="#setup">Setup</a>
-      <a class="gh" href="https://github.com/saidMounaim/figma-wp-blueprint">GitHub</a>
+      <a class="gh" href="https://github.com/devtroll/figma-wp-blueprint">GitHub</a>
     </nav>
   </div>
 </header>
@@ -277,12 +277,12 @@ pre.code .f { color: #F5B97F; }
       <div>
         <p class="eyebrow">Claude Code skills for WordPress</p>
         <h1>Figma frame in.<br><span class="out">Custom WordPress theme out.</span></h1>
-        <p class="lede">Paste a Figma URL. Claude Code extracts the design tokens, builds every section as an ACF Flexible Content layout, and measures the result against Figma at each breakpoint before anything is merged.</p>
+        <p class="lede">Paste a Figma URL. Claude Code extracts the design tokens, builds every section as an ACF block for the Gutenberg editor, and measures the result against Figma at each breakpoint before anything is merged.</p>
         <div class="cta-row">
-          <a class="btn" href="https://github.com/saidMounaim/figma-wp-blueprint">Get it on GitHub</a>
+          <a class="btn" href="https://github.com/devtroll/figma-wp-blueprint">Get it on GitHub</a>
           <a class="btn btn--ghost" href="#setup">Set up a project</a>
         </div>
-        <p class="stack-line">ACF Pro · Custom Post Types · pure CSS · vanilla JS · LocalWP</p>
+        <p class="stack-line">ACF Pro · Custom Post Types · pure CSS · vanilla JS · DDEV</p>
       </div>
 
       <div class="frame" aria-label="Illustration: a Figma frame with measurement redlines">
@@ -332,11 +332,11 @@ pre.code .f { color: #F5B97F; }
           </dl>
         </div>
         <ul class="files">
-          <li><code>acf-json/<b>group_section_hero</b>.json</code><span>The section's fields, saved as local JSON with fixed keys.</span></li>
-          <li><code>acf-json/group_page_builder.json</code><span>Adds <code>layout_hero</code>, which clones those fields into the page builder.</span></li>
-          <li><code>template-parts/sections/<b>hero</b>.php</code><span>Markup that reads <code>get_sub_field()</code> and escapes every value.</span></li>
+          <li><code>blocks/<b>hero</b>/block.json</code><span>Registers the ACF block with its render template and assets.</span></li>
+          <li><code>acf-json/group_block_<b>hero</b>.json</code><span>The block's content fields (plus an administrator-only layout group), saved as local JSON with fixed keys.</span></li>
+          <li><code>template-parts/sections/<b>hero</b>.php</code><span>Render template that reads <code>get_field()</code> and escapes every value.</span></li>
           <li><code>assets/css/sections/<b>hero</b>.css</code><span>Styles scoped to <code>.hero</code>, built only from Figma tokens.</span></li>
-          <li><div><code>assets/js/sections/<b>hero</b>.js</code> <span class="opt">optional</span></div><span>Vanilla JS, loaded only on pages that use the layout.</span></li>
+          <li><div><code>assets/js/sections/<b>hero</b>.js</code> <span class="opt">optional</span></div><span>Vanilla JS, loaded only on pages that use the block.</span></li>
         </ul>
       </div>
     </div>
@@ -356,7 +356,7 @@ pre.code .f { color: #F5B97F; }
             <li><code>/onboard</code><p>Checks the theme folder, Git, PHP, ACF Pro, and your Figma token. Sets the theme name, slug, and prefix.</p></li>
             <li><code>/figma &lt;url&gt;</code><p>Reads colors, type, spacing, breakpoints, and sections. Proposes a build plan.</p></li>
             <li><code>/overview</code><p>Turns the approved plan into a numbered feature list.</p></li>
-            <li><code>/wp-theme</code><p>Feature 1: theme skeleton, tokens, header, footer, and the page builder.</p></li>
+            <li><code>/wp-theme</code><p>Feature 1: theme skeleton, tokens, header, footer, and the ACF block setup.</p></li>
           </ol>
         </div>
         <div>
@@ -384,7 +384,7 @@ pre.code .f { color: #F5B97F; }
       </div>
       <div class="report">
         <div class="report__top">
-          <span><b>/pixel-check</b> http://your-site.local/</span>
+          <span><b>/pixel-check</b> https://your-site.ddev.site/</span>
           <span class="example">Example report</span>
         </div>
         <div class="scroll">
@@ -423,7 +423,7 @@ pre.code .f { color: #F5B97F; }
           <li><strong>Safe by default</strong><p>Output is escaped, input is sanitized, forms use nonces, and queries are reviewed in <code>/audit</code>.</p></li>
           <li><strong>Fields in version control</strong><p>ACF field groups are saved as JSON in <code>acf-json/</code> and committed with the code.</p></li>
         </ul>
-        <div class="nos"><span>page builder</span><span>CSS framework</span><span>jQuery</span><span>build step</span></div>
+        <div class="nos"><span>page builder plugin</span><span>CSS framework</span><span>jQuery</span><span>build step</span></div>
       </div>
       <pre class="code" aria-label="Excerpt of template-parts/sections/hero.php"><span class="c">// template-parts/sections/hero.php</span>
 <span class="k">$heading</span> = <span class="f">get_sub_field</span>( 'heading' );
@@ -456,8 +456,8 @@ pre.code .f { color: #F5B97F; }
           <h3>WordPress</h3>
           <dl class="skill-list">
             <div><dt>/figma &lt;url&gt;</dt><dd>Extract tokens, breakpoints, fonts, sections, and post type candidates</dd></div>
-            <div><dt>/wp-theme</dt><dd>Theme foundation: setup, enqueue, ACF, page builder, header, footer</dd></div>
-            <div><dt>/section</dt><dd>One Figma section as a Flexible Content layout</dd></div>
+            <div><dt>/wp-theme</dt><dd>Theme foundation: setup, enqueue, ACF, blocks, header, footer</dd></div>
+            <div><dt>/section</dt><dd>One Figma section as an ACF block</dd></div>
             <div><dt>/acf</dt><dd>Create or change field groups as JSON in <code>acf-json/</code></dd></div>
             <div><dt>/cpt &lt;name&gt;</dt><dd>Custom Post Type with taxonomies, fields, archive, and single templates</dd></div>
             <div><dt>/pixel-check</dt><dd>Measure the local page against Figma and report differences</dd></div>
@@ -488,10 +488,10 @@ pre.code .f { color: #F5B97F; }
           <h2>Start a project in five steps</h2>
         </div>
         <ol class="steps">
-          <li><div>Create a site in LocalWP and activate ACF Pro.<small>Turn on <code>WP_DEBUG_LOG</code> so the workflow can read PHP notices.</small></div></li>
+          <li><div>Create a DDEV WordPress site and activate ACF Pro.<small>Turn on <code>WP_DEBUG_LOG</code> so the workflow can read PHP notices.</small></div></li>
           <li><div>Create an empty theme folder and copy the workflow files into it.
             <div class="clone">
-              <pre id="clone-cmd">git clone https://github.com/saidMounaim/figma-wp-blueprint.git
+              <pre id="clone-cmd">git clone https://github.com/devtroll/figma-wp-blueprint.git
 cp -r figma-wp-blueprint/{AGENTS.md,CLAUDE.md,.claude,blueprint} \
   "wp-content/themes/your-theme/"</pre>
               <button type="button" id="copy-btn" aria-label="Copy commands">Copy</button>
@@ -504,8 +504,8 @@ cp -r figma-wp-blueprint/{AGENTS.md,CLAUDE.md,.claude,blueprint} \
       <div>
         <h3 style="margin-bottom:14px">Requirements</h3>
         <ul class="reqs">
-          <li><span>LocalWP</span><span>local WordPress 6.5+</span></li>
-          <li><span>ACF Pro</span><span>Flexible Content, clone fields</span></li>
+          <li><span>DDEV</span><span>local WordPress 6.5+</span></li>
+          <li><span>ACF Pro</span><span>ACF blocks, field groups, options page</span></li>
           <li><span>Claude Code</span><span>CLI or VS Code extension</span></li>
           <li><span>Node.js 18+</span><span>Figma helper script</span></li>
           <li><span>PHP CLI</span><span><code>php -l</code> syntax checks</span></li>
@@ -521,7 +521,7 @@ cp -r figma-wp-blueprint/{AGENTS.md,CLAUDE.md,.claude,blueprint} \
 <footer class="site-foot">
   <div class="wrap">
     <span>figma-wp-blueprint · built on the <a href="https://ai-blueprint.dev/docs/getting-started/">AI Blueprint</a> workflow</span>
-    <a href="https://github.com/saidMounaim/figma-wp-blueprint">github.com/saidMounaim/figma-wp-blueprint</a>
+    <a href="https://github.com/devtroll/figma-wp-blueprint">github.com/devtroll/figma-wp-blueprint</a>
   </div>
 </footer>
 

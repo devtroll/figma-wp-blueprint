@@ -4,7 +4,7 @@
 
 **From a Figma URL to a pixel-perfect custom WordPress theme, built with Claude Code.**
 
-ACF Pro Flexible Content · Custom Post Types · Pure CSS · Vanilla JS · LocalWP
+ACF Pro Blocks (Gutenberg) · Custom Post Types · Pure CSS · Vanilla JS · DDEV
 
 ![WordPress](https://img.shields.io/badge/WordPress-6.5%2B-21759B?logo=wordpress&logoColor=white)
 ![ACF Pro](https://img.shields.io/badge/ACF-Pro-00E4BC)
@@ -13,7 +13,7 @@ ACF Pro Flexible Content · Custom Post Types · Pure CSS · Vanilla JS · Local
 ![JavaScript](https://img.shields.io/badge/JS-vanilla-F7DF1E?logo=javascript&logoColor=black)
 ![Claude Code](https://img.shields.io/badge/Claude_Code-skills-D97757)
 
-[Website](https://saidmounaim.github.io/figma-wp-blueprint/) ·
+[Website](https://devtroll.github.io/figma-wp-blueprint/) ·
 [Set up a project](#part-1---set-up-a-new-project) ·
 [Commands](#commands) ·
 [Troubleshooting](#troubleshooting)
@@ -49,8 +49,8 @@ at a time:
 
 - 🎨 **Paste a Figma URL** - tokens, breakpoints, fonts, and a section inventory
   are extracted for you
-- 🧩 **One section = one Flexible Content layout** - ACF fields, PHP template,
-  scoped CSS, and optional JS, all with the same name
+- 🧩 **One section = one ACF block** - `block.json`, ACF fields, PHP render
+  template, scoped CSS, and optional JS, all with the same name
 - 📐 **Pixel-perfect by default** - every visual step is measured against Figma
   at each breakpoint
 - 🔒 **WordPress-safe** - escaping, sanitizing, nonces, and query rules are
@@ -58,7 +58,7 @@ at a time:
 - 🧾 **Reviewable history** - every feature has a spec, a branch, a review, and
   an archive
 
-No page builder, no CSS framework, no jQuery, no build step.
+No page builder plugin, no CSS framework, no jQuery, no build step.
 
 ## How it works
 
@@ -75,14 +75,15 @@ flowchart LR
     I --> F
 ```
 
-One Figma section becomes one Flexible Content layout, and the layout name is
-used everywhere:
+One Figma section becomes one ACF block for the Gutenberg editor, and the block
+name is used everywhere:
 
 | Piece | File |
 | --- | --- |
-| Section fields | `acf-json/group_section_hero.json` |
-| Page builder entry | `layout_hero` in `acf-json/group_page_builder.json` (clones the fields) |
-| Markup | `template-parts/sections/hero.php` |
+| Block registration | `blocks/hero/block.json` |
+| Content fields (texts, images, `hide_block`) | `acf-json/group_block_hero.json` |
+| Layout fields (variant, background; administrators only) | `acf-json/group_block_hero_layout.json` |
+| Markup (render template) | `template-parts/sections/hero.php` |
 | Styles | `assets/css/sections/hero.css` |
 | Behavior *(only when needed)* | `assets/js/sections/hero.js` |
 
@@ -90,7 +91,7 @@ The workflow files live **inside your theme folder**, and the theme folder is
 your Git repository:
 
 ```text
-Local Sites/your-site/app/public/wp-content/themes/your-theme/
+your-site/wp-content/themes/your-theme/
 ├── AGENTS.md          <- AI instructions (from this repo)
 ├── CLAUDE.md          <- Claude Code entry point (from this repo)
 ├── .claude/           <- skills (from this repo)
@@ -115,12 +116,12 @@ Local Sites/your-site/app/public/wp-content/themes/your-theme/
 
 | Tool | Why |
 | --- | --- |
-| [LocalWP](https://localwp.com/) | Local WordPress site (WordPress 6.5+, PHP 8.1+) |
-| [ACF Pro](https://www.advancedcustomfields.com/pro/) | Flexible Content, clone fields, options page |
+| [DDEV](https://ddev.com/) | Local WordPress site (WordPress 6.5+, PHP 8.1+) |
+| [ACF Pro](https://www.advancedcustomfields.com/pro/) | ACF blocks, field groups, options page |
 | [Claude Code](https://claude.com/claude-code) | Runs the skills (CLI or VS Code extension) |
 | [Node.js 18+](https://nodejs.org/) | Figma helper and workflow scripts (no npm install needed) |
 | [Git](https://git-scm.com/) | One branch per feature |
-| PHP CLI | `php -l` syntax checks (LocalWP's **Open site shell** provides it) |
+| PHP CLI | `php -l` syntax checks (on the host, or `ddev exec php -l`) |
 | Figma account | View access to the design file and a personal access token |
 | [Playwright MCP](https://github.com/microsoft/playwright-mcp) *(optional)* | Browser screenshots and measurements for `/pixel-check` and `/check` |
 
@@ -129,10 +130,18 @@ Local Sites/your-site/app/public/wp-content/themes/your-theme/
 > Do this once per website. Keep a clean copy of this repository and copy from
 > it for every new project.
 
-### 1. Create the site in LocalWP
+### 1. Create the site with DDEV
 
-Create a new site, for example `your-site`. It runs at
-`http://your-site.local`. Start it and log in to `wp-admin`.
+```bash
+mkdir your-site && cd your-site
+ddev config --project-type=wordpress --docroot=. --project-name=your-site
+ddev start
+ddev wp core download   # or add an existing WordPress copy
+ddev launch
+```
+
+The site runs at `https://your-site.ddev.site`. Finish the WordPress install and
+log in to `wp-admin`.
 
 ### 2. Install ACF Pro
 
@@ -141,8 +150,9 @@ Create a new site, for example `your-site`. It runs at
 
 ### 3. Turn on debug logging
 
-In LocalWP click **Go to site folder**, open `app/public/wp-config.php`, and
-replace the `WP_DEBUG` line with:
+Open `wp-config.php` in the site root (DDEV's WordPress setup may write its own
+`wp-config-ddev.php`; put the lines in `wp-config.php` before the
+`wp-settings.php` include) and set:
 
 ```php
 define( 'WP_DEBUG', true );
@@ -156,7 +166,7 @@ every step.
 ### 4. Create the theme folder
 
 ```text
-Local Sites/your-site/app/public/wp-content/themes/your-theme/
+your-site/wp-content/themes/your-theme/
 ```
 
 Leave it empty for now. WordPress will not list it as a theme until
@@ -177,7 +187,7 @@ Copy these items from this repository into `your-theme/`:
 Or from a terminal:
 
 ```bash
-git clone https://github.com/saidMounaim/figma-wp-blueprint.git
+git clone https://github.com/devtroll/figma-wp-blueprint.git
 cp -r figma-wp-blueprint/{AGENTS.md,CLAUDE.md,.claude,blueprint} "path/to/themes/your-theme/"
 ```
 
@@ -215,9 +225,9 @@ Type these commands in the Claude Code chat:
 | 9 | `/onboard` | Checks the folder, Git, PHP, ACF Pro, and the Figma token. Sets the theme name, slug, and function prefix. | Answer the questions. Accept `git init`. |
 | 10 | `/figma <figma-url>` | Reads the design: colors, fonts, spacing, breakpoints, sections, post types. Saves reference images. Proposes a plan. | Review the section list, answer open questions, approve the plan. |
 | 11 | `/overview` | Turns the plan into a numbered, trackable feature list. | Read it. |
-| 12 | `/wp-theme` | Writes the spec for feature 1: theme skeleton, tokens, header, footer, page builder. | Approve the spec. |
+| 12 | `/wp-theme` | Writes the spec for feature 1: theme skeleton, tokens, header, footer, ACF block setup. | Approve the spec. |
 | 13 | `/implement` | Builds feature 1 on its own Git branch. | In **Appearance > Themes**, activate your theme. Create a test page. |
-| 14 | `/pixel-check http://your-site.local/` | Compares the header and footer with Figma at each breakpoint. | Ask for fixes if anything differs. |
+| 14 | `/pixel-check https://your-site.ddev.site/` | Compares the header and footer with Figma at each breakpoint. | Ask for fixes if anything differs. |
 | 15 | `/complete` | Archives the feature, then asks before it commits and merges. | Approve. |
 
 Any Figma link works: `design`, `file`, `proto`, or `board`, with or without
@@ -229,8 +239,8 @@ Repeat this loop for each item in the build plan:
 
 ```text
 /feature        spec the next item (for example "Home page sections")
-/implement      build each section: ACF fields + PHP + CSS + JS
-                -> add the sections to the page in wp-admin with the Figma copy
+/implement      build each section as an ACF block: block.json, fields, PHP, CSS, JS
+                -> add the blocks to the page in wp-admin with the Figma copy
 /pixel-check    compare with Figma at every breakpoint
 /check          (optional) prove the spec's done-when criteria in the browser
 /audit current  (optional) WordPress security and quality review
@@ -255,8 +265,8 @@ All commands are typed in the Claude Code chat, not in a terminal.
 | Command | Purpose |
 | --- | --- |
 | `/figma <url>` | Extract tokens, breakpoints, fonts, sections, and CPT candidates from a Figma URL |
-| `/wp-theme` | Theme foundation: `functions.php`, `inc/`, enqueue, ACF setup, page builder, header, footer |
-| `/section <url or name>` | One Figma section as a Flexible Content layout |
+| `/wp-theme` | Theme foundation: `functions.php`, `inc/`, enqueue, ACF setup, ACF block registration, header, footer |
+| `/section <url or name>` | One Figma section as an ACF block (`block.json`, fields, render template, CSS, JS) |
 | `/acf <change>` | Create or edit ACF field groups as JSON in `acf-json/` |
 | `/cpt <name>` | Custom Post Type with taxonomies, fields, archive, and single templates |
 | `/pixel-check <url> [figma-url]` | Measure the local page against Figma and report differences (read-only) |
@@ -285,7 +295,7 @@ All skills use one dependency-free script. You can also run it yourself from
 the theme folder:
 
 ```bash
-node .claude/skills/figma/scripts/figma.mjs check
+node .claude/skills/figma/scripts/figma.mjs check "<figma-url>"
 node .claude/skills/figma/scripts/figma.mjs outline "<figma-url>" --depth 2
 node .claude/skills/figma/scripts/figma.mjs tokens  "<figma-url>"
 node .claude/skills/figma/scripts/figma.mjs images  "<figma-url>" --out blueprint/reference
@@ -293,7 +303,7 @@ node .claude/skills/figma/scripts/figma.mjs images  "<figma-url>" --out blueprin
 
 | Command | What it does |
 | --- | --- |
-| `check` | Verify the token works |
+| `check [url]` | Verify the token with a file call (uses the URL from `design-system.md` when omitted) |
 | `parse <url>` | Show the file key and node id from a URL |
 | `outline <url> [--depth N]` | Print the layer tree (default depth 3) |
 | `node <url> [--depth N] [--out file]` | Save a simplified JSON tree of the node |
@@ -311,12 +321,12 @@ What `/wp-theme`, `/section`, and `/cpt` produce:
 your-theme/
 ├── style.css  functions.php  header.php  footer.php  page.php  index.php
 ├── inc/
-│   ├── setup.php  enqueue.php  acf.php  helpers.php
+│   ├── setup.php  enqueue.php  acf.php  blocks.php  helpers.php
 │   └── post-types/<cpt>.php
 ├── acf-json/                       ACF field groups (versioned)
+├── blocks/<block>/block.json       one registration file per ACF block
 ├── template-parts/
-│   ├── flexible-content.php        renders the page builder
-│   ├── sections/<section>.php      one per Flexible Content layout
+│   ├── sections/<block>.php        render template of one ACF block
 │   └── components/<name>.php
 └── assets/
     ├── css/variables.css           design tokens from Figma
@@ -385,10 +395,10 @@ the template files you want.
 | Problem | Fix |
 | --- | --- |
 | `No Figma token` | Create `.env` with `FIGMA_TOKEN=...` in the theme folder |
-| `403 from Figma` | Token expired, wrong scope, or your Figma account can't view the file |
+| `403 from Figma` | Token expired, missing the scope **File content: Read-only**, or your Figma account can't view the file |
 | `404 from Figma` | Check the URL and that the node still exists in the file |
 | `Not a Figma file URL` | Use a `figma.com/design/...`, `file/`, `proto/`, or `board/` link |
-| `php: command not found` | In LocalWP, right-click the site > **Open site shell**, and start Claude Code there |
+| `php: command not found` | Install PHP on the host, or run checks through `ddev exec php -l <file>` |
 | Skills not found | Open Claude Code in the theme folder, not the site root |
 | Theme not listed in WordPress | Normal until `/wp-theme` creates `style.css` |
 | CPT pages return 404 | **Settings > Permalinks > Save Changes** |
