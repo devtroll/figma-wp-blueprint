@@ -12,3 +12,4 @@ blueprint/.state/staging/
 Thumbs.db
 .vscode/
 *.log
+.idea/
