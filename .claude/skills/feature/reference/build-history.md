@@ -46,9 +46,10 @@ require the exact resulting archive path. For an integrated local-merge archive,
 its unique introducing commit must be reached from that base by a linear run of
 single-parent commits on the default branch (older squash-merged archives
 instead have that base as the introducing commit's sole parent). For an
-integrated schema 2 `pull-request` archive, its unique squash commit must have one
-parent, that parent must descend from `baseCommit`, and the archive must be added
-unchanged there. For unfinished completion, use Complete's phase proof. The path
+integrated schema 2 `pull-request` archive, its unique introducing commit must be
+one of a linear run of single-parent commits on the default branch (the rebased
+work commits) whose first commit descends from `baseCommit`, and the archive must
+be added unchanged there. For unfinished completion, use Complete's phase proof. The path
 checks this derived attempt; it never supplies the number. Missing or ambiguous
 proof stops without rewriting the archived spec.
 Settled history numbering and rollback selection do not require the annotation's

@@ -22,7 +22,7 @@ checkpoints. This skill closes it out: it logs the work, makes the work commits
 (one conventional commit per category), then follows `git.landing`. The default
 `local-merge` path fast-forward merges locally (`git merge --ff-only`) and keeps
 the branch's commits. The optional `pull-request` path pushes the work branch
-and opens a pull request for a later squash merge. Run it only when the work is
+and opens a pull request for a later rebase merge that keeps its commits. Run it only when the work is
 done, reviewed, and the documented `Verify` command, or the fallback build and
 tests, passes.
 
@@ -354,8 +354,9 @@ With `git.landing: "pull-request"`:
    back to a local merge or direct default-branch push when any prerequisite is
    missing.
 2. Show the target remote and base branch, exact branch to push, proposed pull
-   request title, and concise body. State that the pull request must use squash
-   merge to preserve Blueprint's one-work-item, one-default-branch-commit history.
+   request title, and concise body. State that the pull request must use "Rebase and
+   merge" (never squash, never a merge commit), so the per-category commits land
+   on the default branch one by one.
 3. Obtain one explicit approval for the feature-branch push and pull request
    creation. Configuration never supplies this approval. Only after approval,
    push that branch with upstream tracking and open the pull request against the
@@ -363,10 +364,10 @@ With `git.landing: "pull-request"`:
 4. Verify that the pull request head is the exact final work commit and report its
    URL plus check status. Never merge the pull request, enable auto-merge, delete
    the remote branch, or push the default branch from this approval.
-5. Stop with the work ready for provider review and squash merge. If `/complete`
+5. Stop with the work ready for provider review and rebase merge. If `/complete`
    is resumed after the provider reports it merged, follow
-   `reference/completion-recovery.md`; verify the exact pull request and squash
-   commit before reporting completion or offering local branch cleanup.
+   `reference/completion-recovery.md`; verify the exact pull request and its
+   rebased commits before reporting completion or offering local branch cleanup.
 
 Then point the user at `/feature`, `/fix`, or `/rollback` for the next thing.
 
@@ -390,9 +391,9 @@ one repository to another, and a push is never implied.
 ## Rules
 
 - The work item is the unit of history: a linear run of conventional commits on
-  the default branch, one per category, ending with the archive. A local landing
-  never squashes. Checkpoint commits already on the branch stay as they are.
-  Never rewrite published history for this.
+  the default branch, one per category, ending with the archive. A landing
+  never squashes, locally or through a pull request. Checkpoint commits already
+  on the branch stay as they are. Never rewrite published history for this.
 - A rollback preserves the original feature archive and adds a separate rollback
   archive. Never rewrite history to make the feature look as if it never existed.
 - Don't merge unfinished or failing work. The documented `Verify` command, or

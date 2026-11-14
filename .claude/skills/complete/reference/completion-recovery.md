@@ -229,12 +229,11 @@ approval, and continue at Complete Step 2. This archive does not authorize Git.
 
 ## Work committed, awaiting landing
 
-Require a clean recorded work branch. For local landing, require the branch tip
-to be reached from the recorded `head` by a linear run of one or more
-single-parent commits (one per category), and the default still at `baseCommit`.
-For pull-request landing, require one unambiguous final work commit whose sole
-parent is recorded `head`, and `baseCommit` remains an ancestor of the current
-local default and work branch. Compare the complete tip tree to `sourceTree` and
+Require a clean recorded work branch whose tip is reached from the recorded
+`head` by a linear run of one or more single-parent commits (one per category).
+For local landing, require the default still at `baseCommit`. For pull-request
+landing, require `baseCommit` remains an ancestor of the current local default
+and work branch. Compare the complete tip tree to `sourceTree` and
 require exactly the finished transformations above. The tracked archive and final
 bookkeeping must be in that run, not added later. For ignored evidence require
 the separate proof described above. Extra commits beyond the approved run or
@@ -259,14 +258,16 @@ URL and check state, and stop. Never update the branch, merge, enable auto-merge
 or delete a branch during recovery without the separate approval required for
 that action.
 
-When the provider reports it merged, require squash-merge evidence: one merge
-result commit with one parent, the recorded `baseCommit` as an ancestor of that
-parent, and the exact archive added unchanged by that commit. Require the
-provider record to bind that result to the exact pull request and recorded work
-commit. Fetch the named remote read-only when needed to inspect the result, then
-require the remote default branch to contain it. Later default-branch commits are
-allowed. A merge commit, rebase merge, changed head, closed-unmerged request, or
-ambiguous provider result stops with the exact mismatch.
+When the provider reports it merged, require rebase-merge evidence: the remote
+default branch contains a linear run of single-parent commits, as many as the work
+branch carries, whose first commit descends from the recorded `baseCommit`. They
+must match the work commits one to one by subject and patch (`git cherry` against
+the work branch shows no unmatched `+` line), and the last of them adds the exact
+archive unchanged. Require the provider record to bind that result to the exact
+pull request and recorded work head. Fetch the named remote read-only when needed
+to inspect the result. Later default-branch commits are allowed. A squash commit,
+a merge commit, a changed head, a closed-unmerged request, or an ambiguous
+provider result stops with the exact mismatch.
 
 Report the remote work complete. Fast-forward a clean local default checkout and
 delete local or remote work branches only with explicit approval. Never mutate a

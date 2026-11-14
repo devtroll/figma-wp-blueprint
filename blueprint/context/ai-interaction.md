@@ -84,7 +84,7 @@ The loop we use for every feature. The spec for the feature being built lives in
 12. **Land** - `/complete` follows `git.landing`. The default local path asks to
     fast-forward merge the branch (keeping its commits) and later asks separately
     before pushing the default branch. The `pull-request` path asks once before pushing the work branch and
-    opening a pull request, then leaves provider review and squash merge to the
+    opening a pull request, then leaves provider review and rebase merge (keeping its commits) to the
     user. Neither path infers approval from configuration.
 
 Deploying the theme to staging or production is a manual step outside this
