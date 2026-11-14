@@ -78,11 +78,12 @@ The loop we use for every feature. The spec for the feature being built lives in
    - When implementation is done: a compact review packet (changed files, checks run, `## Try it now` when applicable, risks, next action). The per-step walkthrough is part of the Guided checkpoint prompt; the final code walkthrough is always available, separate from `/check guide`'s manual product-review path.
    - `workflow.stepReview: "every"` restores per-step approval pauses but does not enable checkpoint prompts by itself; the previous workflow combines `stepReview: "every"` with `checkpointCommits: "enabled"`.
 10. **Safety + log** - `/complete` checks the active spec, branch, changed files, Verify or fallback check evidence, manual try path, and adapter sync when workflow files changed. Then it archives the spec by its frozen build attempt (`blueprint/history/features/NN-name.md` for the first build, `NN-name--build-N.md` for rebuilds, preserving earlier archives and the stable plan ID; fixes use `blueprint/history/fixes/`), checks the feature off in `blueprint/build-plan.md`, and resets `blueprint/context/current-feature.md` and `blueprint/context/review.md` to their stubs.
-11. **Feature commit** - `/complete` stages everything on the branch (step work
-   plus the logging changes) into one conventional feature commit.
+11. **Commits** - `/complete` stages everything on the branch (step work plus the
+   logging changes) into conventional commits, one per category (logic, tests,
+   documentation); the last one carries the archive.
 12. **Land** - `/complete` follows `git.landing`. The default local path asks to
-    squash-merge the branch and later asks separately before pushing the default
-    branch. The `pull-request` path asks once before pushing the work branch and
+    fast-forward merge the branch (keeping its commits) and later asks separately
+    before pushing the default branch. The `pull-request` path asks once before pushing the work branch and
     opening a pull request, then leaves provider review and squash merge to the
     user. Neither path infers approval from configuration.
 

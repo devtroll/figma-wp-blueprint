@@ -18,9 +18,10 @@ Where this sits in the workflow:
     (the spec)                         (build it)      (commit + land + log)
 
 `/implement` built the feature, fix, or rollback on its branch, with optional per-step commit
-checkpoints. This skill closes it out: it logs the work, makes the single
-work-level commit, then follows `git.landing`. The default `local-merge` path
-squash-merges locally. The optional `pull-request` path pushes the work branch
+checkpoints. This skill closes it out: it logs the work, makes the work commits
+(one conventional commit per category), then follows `git.landing`. The default
+`local-merge` path fast-forward merges locally (`git merge --ff-only`) and keeps
+the branch's commits. The optional `pull-request` path pushes the work branch
 and opens a pull request for a later squash merge. Run it only when the work is
 done, reviewed, and the documented `Verify` command, or the fallback build and
 tests, passes.
@@ -304,16 +305,21 @@ above. Otherwise, preserve the remaining entries without rewriting them.
 Confirm `blueprint/context/review.md` exactly matches the canonical Independent
 Review stub above.
 
-Don't commit yet; the next step makes one work commit covering the code and these
-documentation changes. The archive is the build history.
+Don't commit yet; the next step commits the code and these documentation
+changes. The archive is the build history.
 
 ## Step 2 - make the work commit
 
-Show the complete product and logging diff with the proposed commit message,
+Show the complete product and logging diff with the proposed commit messages,
 then obtain explicit commit approval. Only then stage the reviewed branch work
-(any uncommitted step work plus the Step 1 logging changes) and make one conventional work commit (for example `feat: <feature>`,
-`fix: <name>`, or `revert: roll back <feature>`). `Verify`, or the fallback build
-and tests, must pass first.
+(any uncommitted step work plus the Step 1 logging changes) and make the work
+commits: one conventional commit per category (logic as `feat`, `fix`, or
+`revert`, then tests as `test`, then documentation as `docs`), or a single
+commit when the work has only one category. Never mix categories in one commit.
+The last commit carries the archive and the plan bookkeeping, so the branch tip
+is the finished tree. Use the project's commit message rules (lowercase,
+imperative, short first line). `Verify`, or the fallback build and tests, must
+pass first.
 
 ## Step 3 - land the work
 
@@ -323,12 +329,15 @@ Follow only the configured path.
 
 With `git.landing: "local-merge"`:
 
-1. Confirm the recorded local default branch has not advanced and the final work
-   commit is unchanged. Squash-merge into that default branch only with the user's
-   explicit go-ahead, so the work lands as one clean commit regardless of how many
-   checkpoints the branch carried.
-2. Verify the resulting default-branch commit, parent, archive, and full tree
-   using `reference/completion-recovery.md`, then perform approved branch cleanup.
+1. Confirm the recorded local default branch has not advanced, the branch tip is
+   unchanged, and the branch is a linear run of commits (no merge commits) on top
+   of `baseCommit`. Fast-forward merge it into that default branch
+   (`git merge --ff-only`) only with the user's explicit go-ahead, so the
+   branch's commits land unchanged. If the default has advanced, stop and ask:
+   never create a merge commit and never squash or rewrite the commits.
+2. Verify that the default branch now points at the recorded tip, and check the
+   archive and the full tree using `reference/completion-recovery.md`, then
+   perform approved branch cleanup.
 3. Stop and ask whether to push the local default branch to its upstream. The
    merge approval does not count as push approval.
 4. Push the default branch only after a separate explicit yes in the current
@@ -361,18 +370,29 @@ With `git.landing: "pull-request"`:
 
 Then point the user at `/feature`, `/fix`, or `/rollback` for the next thing.
 
-Finish with the generated `## Try it now` section when one exists. For a
+Finish with the spec's "Live site (manual)" items, verbatim, when it has any.
+Then finish with the generated `## Try it now` section when one exists. For a
 rollback, explain how to confirm the removed behavior is gone and name one
 unaffected regression path. If there is no safe direct observation, omit the
 section and say so plainly. For an optional deeper walkthrough, point to
 `/check guide latest`; that command can read the archived feature after
 `current-feature.md` is reset.
 
+### Companion repositories
+
+When the spec's "Files / areas" names a companion repository (see `AGENTS.md`),
+Step 0, Step 2 and Step 3 apply to it as well, one repository at a time: its own
+safety pass, diff, commit messages, approval and fast-forward landing, on the
+same branch name. The archive, plan bookkeeping and spec reset stay in the main
+repository. A locked repository is never changed. No approval carries over from
+one repository to another, and a push is never implied.
+
 ## Rules
 
-- The work item is the unit of history: one squashed feature, fix, or rollback
-  commit on the default branch, even if the branch carried several checkpoint
-  commits.
+- The work item is the unit of history: a linear run of conventional commits on
+  the default branch, one per category, ending with the archive. A local landing
+  never squashes. Checkpoint commits already on the branch stay as they are.
+  Never rewrite published history for this.
 - A rollback preserves the original feature archive and adds a separate rollback
   archive. Never rewrite history to make the feature look as if it never existed.
 - Don't merge unfinished or failing work. The documented `Verify` command, or

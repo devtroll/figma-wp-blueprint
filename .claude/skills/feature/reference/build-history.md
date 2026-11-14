@@ -43,7 +43,9 @@ A legacy rebuild can preserve a reviewed spec without this field. Its completion
 annotation must freeze the original `baseCommit`: resolve only prior builds and
 their completed reversals present at that base, derive `max(attempts) + 1`, and
 require the exact resulting archive path. For an integrated local-merge archive,
-its unique introducing commit's sole parent must equal that base. For an
+its unique introducing commit must be reached from that base by a linear run of
+single-parent commits on the default branch (older squash-merged archives
+instead have that base as the introducing commit's sole parent). For an
 integrated schema 2 `pull-request` archive, its unique squash commit must have one
 parent, that parent must descend from `baseCommit`, and the archive must be added
 unchanged there. For unfinished completion, use Complete's phase proof. The path

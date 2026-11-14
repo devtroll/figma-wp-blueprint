@@ -199,8 +199,8 @@ Never overwrite conflicting live evidence to obtain that restoration.
 Ignored local-only files are absent from this tree proof. Validate them using
 separately provable exact original bytes plus the archive and retained inputs,
 or stop and name the missing evidence. A local archive can match a still-existing
-work branch; its presence alone cannot bind an already-deleted branch to a squash
-commit. Do not force-add ignored workflow files to make recovery pass.
+work branch; its presence alone cannot bind an already-deleted branch to a merge
+result. Do not force-add ignored workflow files to make recovery pass.
 
 ## Interrupted archival, before the work commit
 
@@ -229,19 +229,21 @@ approval, and continue at Complete Step 2. This archive does not authorize Git.
 
 ## Work committed, awaiting landing
 
-Require a clean recorded work branch at one unambiguous final work commit whose
-sole parent is recorded `head`. For local landing, require the default still at
-`baseCommit`. For pull-request landing, require `baseCommit` remains an ancestor
-of the current local default and work branch. Compare the complete work commit
-tree to `sourceTree` and require exactly the finished transformations above.
-The tracked archive and final bookkeeping must be in that commit, not added later.
-For ignored evidence require the separate proof described above. Extra commits or
+Require a clean recorded work branch. For local landing, require the branch tip
+to be reached from the recorded `head` by a linear run of one or more
+single-parent commits (one per category), and the default still at `baseCommit`.
+For pull-request landing, require one unambiguous final work commit whose sole
+parent is recorded `head`, and `baseCommit` remains an ancestor of the current
+local default and work branch. Compare the complete tip tree to `sourceTree` and
+require exactly the finished transformations above. The tracked archive and final
+bookkeeping must be in that run, not added later. For ignored evidence require
+the separate proof described above. Extra commits beyond the approved run or
 post-commit drift stop for review, not another completion commit.
 
 Rerun current-session Verify and validate all required gates using the recovered
 spec and original receipt. Resume at Complete Step 3's configured landing path.
-Never make a second work commit, reset evidence again, or treat earlier approval
-as covering new changes. Preserve the exact work commit SHA for landing
+Never make a second set of work commits, reset evidence again, or treat earlier
+approval as covering new changes. Preserve the exact tip SHA for landing
 verification.
 
 ## Pull request opened or merged
@@ -275,13 +277,14 @@ creation approval as cleanup approval.
 
 Use this phase only for schema 1 records and schema 2 `local-merge` records.
 
-Require a clean local default branch tip whose sole parent is the recorded
-`baseCommit`, and the complete finished tree and archive. If the work branch still
-exists, require its exact final work commit and tree equality with that default
-tip (`git diff --exit-code <workCommit>^{tree} <defaultTip>^{tree>`), including the
-archive blob. A squash merge normally does not contain the work commit as an
-ancestor. Tree equality alone without the matching base, archive, and completed
-bookkeeping is insufficient.
+Require a clean local default branch tip that is reached from the recorded
+`baseCommit` by a linear run of single-parent commits, and the complete finished
+tree and archive. If the work branch still exists, require it to point at the
+same commit as the default tip, so a fast-forward merge left no merge commit.
+Equal commits alone without the matching base, archive, and completed bookkeeping
+are insufficient. Schema 1 archives from older squash merges instead require the
+default tip's sole parent to be `baseCommit` and tree equality with the work
+commit (`git diff --exit-code <workCommit>^{tree} <defaultTip>^{tree>`).
 
 If the work branch was deleted, require the tracked archive at the default tip,
 its exact source-tree/spec/branch annotation, and exactly the finished changes
@@ -291,7 +294,7 @@ advanced or several commits/archives fit, stop and name the ambiguity instead of
 weakening this proof or searching by title.
 
 Do only pending cleanup already authorized for this work item; ask if cleanup
-approval is missing. Never repeat archival, the work commit, or the squash merge,
+approval is missing. Never repeat archival, the work commits, or the merge,
 and never create a cleanup commit on the default branch. If nothing remains,
 report the verified local merge once and leave Git unchanged. Push still needs
 its separate approval. A repeated resume follows this same no-op path.
