@@ -200,6 +200,15 @@ import that saves page content must:
 - Register image sizes in `inc/setup.php` only for crops the design needs.
 - Decorative SVG icons are inlined from `assets/icons/` through a helper; content
   images go through the media library.
+- **Fluid image width:** a section image never jumps between breakpoints. Read its
+  width in the mobile and the desktop Figma frame and scale it linearly with
+  `clamp( <mobile>, <intercept> + <slope>vw, <desktop> )` between the two frame
+  widths, keep proportions with `aspect-ratio`, and apply the same ratio to
+  anything sized relative to it (decorative circle, offsets). Add a width
+  `transition` (about 400 ms, `var(--ease)`) inside
+  `@media (prefers-reduced-motion: no-preference)` so a resize moves smoothly. A
+  layout switch (for example stacked to side by side) may still change the width
+  once.
 
 ## Accessibility
 

@@ -138,6 +138,9 @@ Then use these section headings:
 - Testing
 - Notes for the AI
 - Open questions, only when a product decision remains unresolved
+- Live site (manual), only when the build sets data that lives in the database
+  (plugin options, page content, menus, settings): one line per value with where
+  to set it. It is archived with the spec and repeated in the final handoff.
 
 Build steps are ordered checklist items. Each step must leave the project
 working, stay small enough to review, and end with a concrete `Done when` that
@@ -171,8 +174,10 @@ again.
 For visual work, the Design reference lists the Figma node URL for every
 section, page, or CPT template at each designed breakpoint (from
 `blueprint/design/design-system.md`) and links the screenshots in
-`blueprint/reference/`. Stop and ask for `/figma <url>` when the node IDs are
-missing. Build steps for WordPress work follow the recipes: `/wp-theme` for the
+`blueprint/reference/`. Read the entries of `blueprint/design/annotations.md` for
+those nodes and list their ids and the rule each one sets (behavior, motion,
+content) in the Design reference; an annotation is part of the contract. Stop and
+ask for `/figma <url>` when the node IDs or the annotations file are missing. Build steps for WordPress work follow the recipes: `/wp-theme` for the
 theme foundation, `/section` for one ACF block per step, `/acf`
 for field changes, `/cpt` for post types. Each visual step's `Done when`
 includes a `/pixel-check` pass at every designed breakpoint, and each step

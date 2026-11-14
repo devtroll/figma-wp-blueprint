@@ -10,6 +10,49 @@ attribution. See
 [Commit and PR attribution](blueprint/context/ai-interaction.md#commit-and-pr-attribution)
 for optional tool settings.
 
+## Commits and Git safety
+
+- Commit messages follow Conventional Commits, in English, lowercase, imperative,
+  first line under 50 characters, no trailing period (`feat(cta): add mobile text`).
+  Types: `feat`, `fix`, `docs`, `style`, `refactor`, `perf`, `test`, `chore`.
+- One category per commit: logic (`feat`/`fix`), then tests (`test`), then
+  documentation (`docs`). Never mix categories in one commit. The project may add
+  stricter rules; they win.
+- `/complete` lands a local work branch by fast-forward merge, keeping those
+  commits (see the complete skill). Never squash or rewrite them.
+- Never undo your own changes with `git checkout <file>`, `git checkout --theirs`,
+  `git restore` or `git reset --hard`: they also discard other uncommitted work of
+  the same file. Remove your lines with a targeted edit. Resolve merge conflicts by
+  hand, hunk by hunk.
+- Never push, merge or delete a branch without a separate explicit yes for that
+  action and that repository.
+
+## Companion repositories
+
+Some features keep part of their code in another repository (for example a
+plugin with its own git repo next to the theme). The spec names such a repository
+under "Files / areas". The rules:
+
+- Use the same branch name in both repositories. Spec, archive and build-plan
+  tick live only in the main (theme) repository.
+- `/complete` runs its safety pass, commit approval and fast-forward landing for
+  each repository separately, with its own diff, messages and approval. A push is
+  never implied.
+- Locked repositories (for example a base plugin the project must not edit) are
+  read only: write a precise specification for their owner instead of editing.
+- Upstream changes of a companion repository are merged with `/sync-plugins`.
+
+## Figma fidelity
+
+- Build what the frame shows: widths, number of rows, order, states. Do not
+  substitute your own layout and do not ask for forgiveness later: when something
+  cannot be built as designed, ask first.
+- Read the component's states (hover, focus, error, filled) and the Dev Mode
+  annotations and open comments of the frames you build. They are part of the
+  contract (`blueprint/design/annotations.md`).
+- Every difference that remains is listed in the final handoff as a deliberate
+  deviation with its reason. An unlisted difference is a defect.
+
 ## What this is
 
 **figma-wp-blueprint** turns a Figma design into a pixel-perfect custom WordPress
@@ -58,6 +101,8 @@ browser features before adding machinery.
 - `blueprint/context/coding-standards.md` - read before changing code
 - `blueprint/context/ai-interaction.md` - read when running the workflow
 - `blueprint/context/current-feature.md` - the one feature, fix, or rollback being built
+- `blueprint/design/annotations.md` - Dev Mode annotations and open comments of the
+  Figma file, written by `/figma`; read the entries of the frames you build
 - `blueprint/design/design-system.md` - Figma tokens, breakpoints, and the section
   inventory, written by `/figma`
 
@@ -133,6 +178,8 @@ then per feature:
 - `cpt` - register a Custom Post Type with its taxonomies, templates, and fields
 - `pixel-check` - compare the rendered DDEV page with the Figma frame at each
   breakpoint and report measured differences, read-only
+- `sync-plugins` - merge upstream changes of companion plugins (pull the base
+  plugin, integrate the template plugin's original repo, review what changed)
 - `seo-check` - check rendered pages (all, one post type, or specific pages)
   against on-page SEO rules and report where to fix each problem, read-only
 

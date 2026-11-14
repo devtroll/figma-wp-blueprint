@@ -47,7 +47,17 @@ For each designed breakpoint in `design-system.md`:
    numbers miss: alignment, wrapping, missing elements, wrong image crop, wrong
    icon, order.
 5. **Interaction states** - when the design defines hover, focus, or open
-   states, trigger them and compare.
+   states, trigger them and compare. Read the state variants of the Figma
+   component (for example `State=Focus`: stroke weight, ring, color) and the
+   annotation entries of the frame. Annotation behavior (motion, timing, what
+   happens on submit) is measured like a value.
+
+## Deviations
+
+A difference in layout (width, number of rows, missing or extra element, order)
+is a failure, never a pass with a note. It is only acceptable when the user
+decided it explicitly; the report then lists it as a deliberate deviation with
+the decision. Everything else that differs is a defect.
 
 ## Tolerance
 

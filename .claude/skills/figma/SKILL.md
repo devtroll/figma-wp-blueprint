@@ -45,6 +45,8 @@ node $F tokens  <url>                          # colors, text styles, spacing, r
 node $F images  <url> --ids 1:2,3:4 --name home --out blueprint/reference
 node $F images  <url> --ids 5:6 --format svg --name logo --out assets/icons
 node $F fills   <url> --out blueprint/reference/fills   # photos used in the node
+node $F annotations <url> --out blueprint/design/annotations.md   # Dev Mode annotations, verbatim
+node $F comments    <url> --out blueprint/.state/figma/comments.md # open comment threads
 ```
 
 To target a different node in the same file, reuse the URL and change only the
@@ -123,6 +125,24 @@ top (custom properties cannot be used in media queries).
 section node (`--name section-<block>-<width>`) into `blueprint/reference/`.
 These are the visual targets for `/section` and `/pixel-check`. View them to
 confirm the section split from Step 1.
+
+## Step 4b - annotations and comments
+
+Designers put behavior, motion, content rules and decisions into Dev Mode
+annotations and comment threads, not into the layers. Read them before writing
+the design map:
+
+1. `annotations <file-url> --out blueprint/design/annotations.md` for the whole
+   file (or each in-scope page frame). Keep the text verbatim (German stays
+   German). Each entry carries its node id, node name and frame.
+2. `comments <file-url>` for the open threads. Comments need the extra token
+   scope `file_comments:read`; when the call fails with 403, say so and ask the
+   user to add the scope instead of skipping silently. Append the open threads to
+   `annotations.md` under `## Open comments`. A comment that is a question or a
+   decision belongs to the Open questions of the design map.
+3. In the design map, list per section and component which annotation ids apply.
+   Annotations override your assumptions; contradictions between an annotation
+   and a frame go to Open questions.
 
 ## Step 5 - write design-system.md
 

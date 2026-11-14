@@ -33,7 +33,10 @@ For the section node at each designed breakpoint:
    JSON: structure, text, `box` sizes and positions, auto-layout `gap` and
    `padding`, `font`, `fills`, `radius`, `effects`, and image fills (ratio =
    `box.w / box.h`).
-3. Map every value to a token in `assets/css/variables.css`. A value with no
+3. Read the entries of `blueprint/design/annotations.md` for the section's node
+   ids (hover, motion, content rules, mobile behavior) and the component states
+   in Figma (hover, focus, error, filled). Build them; they are not optional.
+4. Map every value to a token in `assets/css/variables.css`. A value with no
    token is either a section-local value (fine, keep it as a custom property at
    the top of the section CSS) or a missing token (add it to `variables.css` and
    note it).
@@ -79,6 +82,10 @@ Write `assets/css/sections/<block-kebab>.css` (referenced by `style` in `block.j
 - `clamp()` for type and padding that scale between frames
 - match Figma exactly: box sizes, gaps, line heights, letter spacing, image
   aspect ratios (`aspect-ratio` + `object-fit`)
+- images scale fluidly: width = `clamp()` in `vw` between the Figma mobile and
+  desktop width, `aspect-ratio` on the image, width `transition` (about 400 ms,
+  `var(--ease)`) under `prefers-reduced-motion: no-preference` (see "Fluid image
+  width" in `coding-standards.md`)
 - hover and focus states as designed (clearly visible focus outline); `prefers-reduced-motion` for any motion
 - rounded image corners with `border-radius` and `overflow: hidden`, never baked into the image
 

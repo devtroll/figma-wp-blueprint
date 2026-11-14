@@ -191,6 +191,9 @@ When all steps and required gates pass:
 - Present the branch, changes grouped by area, exact checks run, findings and
   independent-review state, known risks, configured gate outcomes, and
   `/complete` as the next action.
+- List every remaining difference from the Figma design as a deliberate deviation
+  with its reason or user decision, and repeat the spec's "Live site (manual)"
+  items. An unlisted difference counts as a defect.
 - Include the generated `## Try it now` section verbatim when guide mode produced
   one. Do not replace it with a vague summary or a pointer. When the selected
   policy found no safe direct path, omit the section and state that outcome with
