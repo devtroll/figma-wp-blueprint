@@ -21,6 +21,12 @@ Commands:
   images  <url> [--ids a:b,c:d] [--scale 2] [--format png|jpg|svg] [--out dir]
                              render nodes as images (default: the URL node)
   fills   <url> [--out dir]  download image fills (photos) used inside the node
+  annotations <url> [--out file]
+                             list the Dev Mode annotations of the node and its children (behavior,
+                             content rules, motion), verbatim
+  comments <url> [--all] [--out file]
+                             list the open comment threads of the file (decisions, questions); --all
+                             adds resolved ones. Needs the token scope "file_comments:read"
 
 URLs: figma.com/design|file|proto|board/<key>/...?node-id=12-34`;
 
@@ -48,6 +54,10 @@ async function main() {
       return images(parseUrl(url), options);
     case "fills":
       return fills(parseUrl(url), options);
+    case "annotations":
+      return annotations(parseUrl(url), options);
+    case "comments":
+      return comments(parseUrl(url), options);
     default:
       console.log(USAGE);
       process.exit(command ? 1 : 0);
@@ -343,5 +353,58 @@ async function fills(ref, options) {
     const file = join(out, `${imageRef}.${ext}`);
     await writeFile(file, Buffer.from(await response.arrayBuffer()));
     console.log(`Saved ${file}`);
+  }
+}
+
+// Dev Mode annotations carry behavior and content rules that the layers do not show. Verbatim, with node id,
+// node name and the top-level frame they sit in.
+async function annotations(ref, options) {
+  const { document, name } = await fetchNode(ref);
+  const lines = [`# Figma annotations (Dev Mode)`, ``, `File: ${name}`, ``];
+  let count = 0;
+  const walk = (node, frame) => {
+    const here = frame ?? (node.type === "FRAME" || node.type === "SECTION" ? node.name : null);
+    for (const note of node.annotations ?? []) {
+      const text = note.labelMarkdown ?? note.label ?? "";
+      if (!text.trim()) continue;
+      count++;
+      lines.push(`## ${node.id} ${node.name}${frame ? ` (in ${frame})` : ""}`, ``);
+      lines.push(...text.split(/\r?\n/).map((l) => `> ${l}`), ``);
+    }
+    for (const child of node.children ?? []) walk(child, here === node.name && !frame ? node.name : here);
+  };
+  walk(document, null);
+  if (count === 0) lines.push("No annotations found.");
+  await output(lines.join("\n"), options);
+  console.error(`${count} annotation(s).`);
+}
+
+// Comment threads: questions and decisions of the design team. Open threads by default.
+async function comments(ref, options) {
+  const data = await api(`/files/${ref.fileKey}/comments`);
+  const all = data.comments ?? [];
+  const replies = new Map();
+  for (const c of all.filter((x) => x.parent_id)) {
+    replies.set(c.parent_id, [...(replies.get(c.parent_id) ?? []), c]);
+  }
+  const threads = all.filter((c) => !c.parent_id && (options.all !== undefined || !c.resolved_at));
+  const lines = [`# Figma comments`, ``, `Open threads: ${threads.length}${options.all !== undefined ? " (including resolved)" : ""}`, ``];
+  for (const t of threads) {
+    const node = t.client_meta?.node_id ? ` node ${t.client_meta.node_id}` : "";
+    lines.push(`## ${t.id}${node}${t.resolved_at ? " (resolved)" : ""}`, ``);
+    for (const c of [t, ...(replies.get(t.id) ?? [])]) {
+      lines.push(...String(c.message).split(/\r?\n/).map((l, i) => (i === 0 ? `> ${c.user?.handle ?? "?"}: ${l}` : `> ${l}`)), ``);
+    }
+  }
+  await output(lines.join("\n"), options);
+}
+
+async function output(text, options) {
+  if (options.out) {
+    await mkdir(resolve(options.out, ".."), { recursive: true });
+    await writeFile(resolve(options.out), `${text}\n`);
+    console.error(`Saved ${options.out}`);
+  } else {
+    console.log(text);
   }
 }
