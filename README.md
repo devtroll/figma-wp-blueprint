@@ -270,6 +270,7 @@ All commands are typed in the Claude Code chat, not in a terminal.
 | `/acf <change>` | Create or edit ACF field groups as JSON in `acf-json/` |
 | `/cpt <name>` | Custom Post Type with taxonomies, fields, archive, and single templates |
 | `/pixel-check <url> [figma-url]` | Measure the local page against Figma and report differences (read-only) |
+| `/sync-plugins` | Pull the locked base plugin, merge the original repo of the template plugin into the project copy, then review what changed |
 | `/seo-check [all | <url or slug> | <post-type>]` | Check pages for on-page SEO problems and where to fix them (read-only); asks which pages when run without an argument |
 
 ### Workflow skills
